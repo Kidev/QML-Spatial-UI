@@ -87,6 +87,7 @@ Window {
             hoverEnabled: true
             mouseEnabled: true
             offset: Qt.vector3d(0, 150, 0)
+            offsetAnchor: Qt.vector3d(0, 200, 50)
             showLinker: true
             size: Qt.size(100, 50)
             target: targetModel
@@ -135,8 +136,8 @@ Window {
             fixedSize: false
             hoverEnabled: true
             mouseEnabled: true
-            offset: Qt.vector3d(0, 20, 0)
-            offsetAnchor: Qt.vector3d(0, 200, 0)
+            offset: Qt.vector3d(0, 150, 0)
+            offsetAnchor: Qt.vector3d(0, 200, 50)
             showLinker: true
             size: Qt.size(200, 50)
             target: targetHuman
@@ -168,7 +169,7 @@ Window {
 
             Rectangle {
                 anchors.fill: parent
-                border.color: spatialNameTag.hovered ? "white" : "black"
+                border.color: spatialNameTag.hovered ? "black" : "white"
                 border.width: 2
                 color: "white"
                 radius: 25
