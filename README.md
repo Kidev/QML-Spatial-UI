@@ -137,7 +137,7 @@ Window {
         id: view3D
 
         anchors.fill: parent
-        camera: cameraNode
+        camera: perspectiveCamera
 
         environment: SceneEnvironment {
             backgroundMode: SceneEnvironment.Color
@@ -148,16 +148,16 @@ Window {
             id: originNode
 
             PerspectiveCamera {
-                id: cameraNode
+                id: perspectiveCamera
 
                 fieldOfView: 45
-                position: Qt.vector3d(0, 200, 300)
+                position: Qt.vector3d(0, 200, 500)
             }
         }
 
         OrbitCameraController {
             anchors.fill: parent
-            camera: cameraNode
+            camera: perspectiveCamera
             origin: originNode
             panEnabled: true
         }
@@ -183,8 +183,8 @@ Window {
         SpatialItem {
             id: spatialUI
 
-            camera: cameraNode
-            fixedSize: true
+            camera: perspectiveCamera
+            fixedSize: hovered
             hoverEnabled: true
             mouseEnabled: true
             offset: Qt.vector3d(0, 150, 0)
@@ -198,7 +198,7 @@ Window {
                 pathHints: ShapePath.PathLinear
                 startX: spatialUI.linkerStart.x
                 startY: spatialUI.linkerStart.y
-                strokeColor: "white"
+                strokeColor: spatialUI.hovered ? "black" : "white"
                 strokeWidth: 4 * spatialUI.scaleFactor
 
                 PathLine {
@@ -207,28 +207,21 @@ Window {
                 }
             }
 
-            onClicked: function (event) {
-                console.log(`event=${event}`);
-            }
-            onEntered: function () {
-                console.log(`ENTER`);
-            }
-            onExited: function () {
-                console.log(`EXIT`);
-            }
-            onHoveredChanged: function () {
-                console.log(`hovered=${hovered}`);
-            }
+            onClicked: event => console.log(`event=${event}`)
+            onEntered: () => console.log(`ENTER`)
+            onExited: () => console.log(`EXIT`)
+            onHoveredChanged: () => console.log(`hovered=${hovered}`)
 
             Rectangle {
                 anchors.fill: parent
-                border.color: "black"
-                border.width: 2
-                color: "white"
+                border.color: spatialUI.hovered ? "white" : "black"
+                border.width: spatialUI.hovered ? 4 : 2
+                color: spatialUI.hovered ? "black" : "white"
                 radius: 10
 
                 Text {
                     anchors.centerIn: parent
+                    color: spatialUI.hovered ? "white" : "black"
                     font.pixelSize: 16 * spatialUI.scaleFactor
                     text: "SpatialUI"
                 }
