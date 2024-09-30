@@ -5,7 +5,12 @@ set(EXAMPLE_SOURCES
 
 set(EXAMPLE_QML
     MainScene.qml
+    Human.qml
 )
+
+set(EXAMPLE_RESOURCES
+    meshes/plane_mesh.mesh
+    meshes/sphere_001_Sphere_mesh.mesh)
 
 qt_policy(SET QTP0001 NEW)
 
@@ -20,12 +25,18 @@ if (DEBUG)
             ${EXAMPLE_QML}
         NO_CACHEGEN
         NO_LINT
+        RESOURCES
+            ${EXAMPLE_RESOURCES}
+        RESOURCE_PREFIX ""
     )
 else ()
     qt_add_qml_module(exampleExec
         URI example
         QML_FILES
             ${EXAMPLE_QML}
+        RESOURCES
+            ${EXAMPLE_RESOURCES}
+        RESOURCE_PREFIX ""
     )
 endif ()
 

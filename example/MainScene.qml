@@ -54,6 +54,25 @@ Window {
             ]
         }
 
+        Human {
+            id: targetHuman
+
+            eulerRotation: Qt.vector3d(0, 0, 0)
+            pivot: Qt.vector3d(-10, 0, 0)
+            position: Qt.vector3d(100, -50, 0)
+            scale: Qt.vector3d(20, 20, 20)
+
+            RotationAnimation on eulerRotation.y {
+                direction: RotationAnimation.Counterclockwise
+                duration: 10000
+                from: 360
+                loops: Animation.Infinite
+                to: 0
+            }
+
+            Component.onCompleted: () => eulerRotation.y = 360
+        }
+
         DirectionalLight {
             eulerRotation.x: -30
             eulerRotation.y: -70
@@ -63,6 +82,7 @@ Window {
             id: spatialUI
 
             camera: perspectiveCamera
+            closeUpScaling: true
             fixedSize: hovered
             hoverEnabled: true
             mouseEnabled: true
@@ -103,6 +123,61 @@ Window {
                     color: spatialUI.hovered ? "white" : "black"
                     font.pixelSize: 16 * spatialUI.scaleFactor
                     text: "SpatialUI"
+                }
+            }
+        }
+
+        SpatialItem {
+            id: spatialNameTag
+
+            camera: perspectiveCamera
+            closeUpScaling: true
+            fixedSize: false
+            hoverEnabled: true
+            mouseEnabled: true
+            offset: Qt.vector3d(0, 20, 0)
+            offsetAnchor: Qt.vector3d(0, 200, 0)
+            showLinker: true
+            size: Qt.size(200, 50)
+            target: targetHuman
+
+            linker: ShapePath {
+                capStyle: ShapePath.FlatCap
+                joinStyle: ShapePath.BevelJoin
+                pathHints: ShapePath.PathConvex | ShapePath.PathLinear | ShapePath.PathNonIntersecting
+                startX: spatialNameTag.linkerStart.x
+                startY: spatialNameTag.linkerStart.y
+                strokeColor: spatialNameTag.hovered ? "black" : "white"
+                strokeWidth: 4 * spatialNameTag.scaleFactor
+
+                PathLine {
+                    x: spatialNameTag.linkerEnd.x
+                    y: spatialNameTag.linkerEnd.y
+                }
+
+                PathLine {
+                    x: spatialNameTag.linkerEnd.x + 20
+                    y: spatialNameTag.linkerEnd.y
+                }
+
+                PathLine {
+                    x: spatialNameTag.linkerStart.x
+                    y: spatialNameTag.linkerStart.y
+                }
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                border.color: spatialNameTag.hovered ? "white" : "black"
+                border.width: 2
+                color: "white"
+                radius: 25
+
+                Text {
+                    anchors.centerIn: parent
+                    color: "black"
+                    font.pixelSize: 16 * spatialNameTag.scaleFactor
+                    text: "My name's JEFF"
                 }
             }
         }

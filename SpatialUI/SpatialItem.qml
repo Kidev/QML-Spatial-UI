@@ -7,8 +7,24 @@ Item {
 
     property real baseDistance: 1.0
     required property PerspectiveCamera camera
+    property bool closeUpScaling: false
     default property alias data: contentItem.data
-    property real distanceFactor: 1.0
+    property real distanceFactor: {
+        if (!root.camera) {
+            return 1.0;
+        }
+        const distance = root.camera.scenePosition.minus(target.scenePosition).length();
+        const fov = root.camera.fieldOfView * Math.PI / 180.0;
+        let perspectiveScale = (root.baseDistance / distance) * (1 / Math.tan(fov / 2));
+        if (root.fixedSize) {
+            if (root.closeUpScaling) {
+                perspectiveScale = Math.max(1.0, perspectiveScale);
+            } else {
+                perspectiveScale = 1.0;
+            }
+        }
+        return perspectiveScale;
+    }
     property bool fixedSize: false
     property bool hoverEnabled: false
     property bool hovered: false
@@ -17,14 +33,15 @@ Item {
     readonly property vector2d linkerStart: Qt.vector2d(root.screenPosition.x, root.screenPosition.y)
     property bool mouseEnabled: false
     property vector3d offset: Qt.vector3d(0, 0, 0)
-    readonly property real scaleFactor: root.fixedSize ? 1.0 : root.distanceFactor
-    property vector2d screenPosition: Qt.vector2d(-10000, -10000)
-    property vector2d screenPositionOffset: Qt.vector2d(-10000, -10000)
+    property vector3d offsetAnchor: Qt.vector3d(0, 0, 0)
+    readonly property real scaleFactor: root.fixedSize && !root.closeUpScaling ? 1.0 : root.distanceFactor
+    property vector2d screenPosition: root.camera && root.windowPos.z > 0 ? Qt.vector2d(root.windowPos.x * Window.width, root.windowPos.y * Window.height) : Qt.vector2d(-10000, -10000)
+    property vector2d screenPositionOffset: root.camera && root.windowPosOffset.z > 0 ? Qt.vector2d(root.windowPosOffset.x * Window.width, root.windowPosOffset.y * Window.height) : Qt.vector2d(-10000, -10000)
     property bool showLinker: false
     required property size size
-    required property Model target
-    property vector3d windowPos: Qt.vector3d(-1, -1, -1)
-    property vector3d windowPosOffset: Qt.vector3d(-1, -1, -1)
+    required property Node target
+    property vector3d windowPos: root.camera ? root.camera.mapToViewport(root.target.scenePosition.plus(root.offsetAnchor)) : Qt.vector3d(-1, -1, -1)
+    property vector3d windowPosOffset: root.camera ? root.camera.mapToViewport(root.target.scenePosition.plus(root.offsetAnchor).plus(root.offset)) : Qt.vector3d(-1, -1, -1)
     property int zItem: 11
     property int zLinker: 10
 
@@ -32,25 +49,11 @@ Item {
     signal entered
     signal exited
 
-    function updateDistanceFactor() {
-        const distance = root.camera.position.minus(target.position).length();
-        const fov = root.camera.fieldOfView * Math.PI / 180.0;
-        const perspectiveScale = (root.baseDistance / distance) * (1 / Math.tan(fov / 2));
-        root.distanceFactor = perspectiveScale;
-    }
-
     function updateTargetPos() {
-        root.windowPos = root.camera.mapToViewport(root.target.position);
-        root.windowPosOffset = root.camera.mapToViewport(root.target.position.plus(root.offset));
-        root.screenPosition = root.windowPos.z > 0 ? Qt.vector2d(root.windowPos.x * Window.width, root.windowPos.y * Window.height) : Qt.vector2d(-10000, -10000);
-        root.screenPositionOffset = root.windowPosOffset.z > 0 ? Qt.vector2d(root.windowPosOffset.x * Window.width, root.windowPosOffset.y * Window.height) : Qt.vector2d(-10000, -10000);
-        if (!root.fixedSize) {
-            root.updateDistanceFactor();
-        }
     }
 
-    Component.onCompleted: {
-        root.baseDistance = root.camera.position.minus(root.target.position).length();
+    Component.onCompleted: () => {
+        root.baseDistance = root.camera.scenePosition.minus(root.target.scenePosition).length();
         root.updateTargetPos();
     }
 
