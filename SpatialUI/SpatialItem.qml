@@ -25,8 +25,8 @@ Item {
     required property Model target
     property vector3d windowPos: Qt.vector3d(-1, -1, -1)
     property vector3d windowPosOffset: Qt.vector3d(-1, -1, -1)
-    readonly property int zOffsetItem: 11
-    readonly property int zOffsetLinker: 10
+    property int zItem: 11
+    property int zLinker: 10
 
     signal clicked(MouseEvent event)
     signal entered
@@ -85,7 +85,7 @@ Item {
         width: root.size.width * root.scaleFactor
         x: root.screenPositionOffset.x
         y: root.screenPositionOffset.y
-        z: root.zOffsetItem
+        z: root.zItem
 
         MouseArea {
             anchors.fill: contentItem
@@ -108,6 +108,6 @@ Item {
         id: linkerShape
 
         visible: root.showLinker
-        z: root.zOffsetLinker
+        z: root.zLinker
     }
 }

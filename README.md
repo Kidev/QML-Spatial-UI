@@ -1,13 +1,13 @@
 # QML Spatial UI
 The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that stay positioned over 3D models in a `View3D` scene, maintaining a constant perceived size despite changes in camera position or model distance. This is useful for adding labels, controls, or indicators to objects in a 3D environment, enhancing interactivity and context.
 
-#### Demo
+### Demo
 [A demo of `SpatialItem` in your browser is available here](#).
 
 ### Features
 
 - **2D Content in 3D Space**  
-  Easily add any Qt Quick item (Rectangles, Text, Images, etc.) as children of `SpatialItem`, rendering them directly in the 3D world. This allows for flexible, rich UI elements in 3D environments.
+  Easily add any Qt Quick item (`Rectangle`, `Text`, `Image`, etc.) as children of `SpatialItem`, rendering them in an overlay above the 3D world. This allows for flexible, rich spaptial UI elements in 3D environments.
 
 - **Billboard in Overlay**  
   The item always faces the camera, ensuring visibility from any angle, and can be rendered in front of 3D objects since it is not part of the 3D world. This creates a clear and accessible visual representation.
@@ -33,13 +33,24 @@ The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that s
 - **Dynamic Property Changes**  
   All properties of `SpatialItem` can be updated dynamically, allowing for responsive and interactive 3D UIs that change based on user actions or other conditions in the application.
 
-
 ### Documentation: SpatialItem
 
 #### Properties
 
+- **`data`** (**default**) [Item]:  
+  Represents the content of the overlay UI. This can be customized to show specific information, such as labels, icons, or controls. As the default property, this means a children of `SpatialItem` will get assigned to it automatically.
+
 - **`camera`** (**required**) [PerspectiveCamera]:  
-  Defines the reference camera for this SpatialItem. It must be a `PerspectiveCamera` inside a Node, which will be used to compute the distance to the target and project its position to the screen space.
+  Defines the reference camera for this SpatialItem. It must be a `PerspectiveCamera` inside a `Node`, which will be used to compute the distance to the target and project its position to the screen space.
+
+- **`size`** (**required**) [size]:  
+  The base size of the overlay UI in screen space, before applying scaling based on distance. This property can be used to adjust the perceived size of the overlay.
+
+- **`target`** (**required**) [Model]:  
+  The 3D model to which the overlay UI is linked. The position of this model is used to determine the screen position for displaying the overlay.
+
+- **`linker`** [ShapePath]:  
+  Defines the visual appearance of the linker line between the overlay and the target model. This property can be customized to modify attributes like color, width, and style of the linker.
 
 - **`fixedSize`** [bool]:  
   If `true`, the overlay UI will maintain a constant size on the screen regardless of distance to the camera. Defaults to `false`.
@@ -56,17 +67,11 @@ The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that s
 - **`showLinker`** [bool]:  
   If `true`, a line will be drawn connecting the UI overlay to the target model to visually indicate the relationship. Defaults to `false`.
 
-- **`size`** [size]:  
-  The base size of the overlay UI in screen space, before applying scaling based on distance. This property can be used to adjust the perceived size of the overlay.
+- **`zItem`** [bool]:  
+  The z value of the contents of the UI. Defaults to `11`.
 
-- **`target`** (**required**) [Model]:  
-  The 3D model to which the overlay UI is linked. The position of this model is used to determine the screen position for displaying the overlay.
-
-- **`linker`** [ShapePath]:  
-  Defines the visual appearance of the linker line between the overlay and the target model. This property can be customized to modify attributes like color, width, and style of the linker.
-
-- **`data`** (**default**) [Item]:  
-  Represents the content of the overlay UI. This can be customized to show specific information, such as labels, icons, or controls. As the default property, this means a children of `SpatialItem` will get assigned to it automatically.
+- **`zLinker`** [bool]:  
+  The z value of the linker shape. Defaults to `10` (so below the UI).
 
 #### Read-only Data
 
@@ -80,7 +85,7 @@ The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that s
   Represents the starting point of the linker line in screen space, which is connected to the target model's projected position.
 
 - **`scaleFactor`** [real]:  
-  A scaling factor used to adjust the size of the overlay UI based on the distance between the camera and the target. This ensures that the overlay appears to have a fixed size in 3D space, despite changes in perspective: use it to scale font sizes, strole width...
+  A scaling factor used to adjust the size of the overlay UI based on the distance between the camera and the target. This ensures that the overlay appears to have a fixed size in 3D space, despite changes in perspective: use it to scale font sizes, stroke width...
 
 #### Signals
 
@@ -109,8 +114,9 @@ add_subdirectory(libs/QMLSpatialUI)
 import SpatialUI
 ```
 
-### Example usage
-Take a look at [the complete example here](https://github.com/Kidev/QML-Spatial-UI/tree/main/example)
+### Example
+Take a look at [the complete example here](https://github.com/Kidev/QML-Spatial-UI/tree/main/example) \
+To run locally the example, edit `build.sh` and set `QT_ROOT` to your Qt installation architecture folder. Then run `make`
 
 ```qml
 import QtQuick
