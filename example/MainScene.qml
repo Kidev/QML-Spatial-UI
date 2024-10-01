@@ -30,7 +30,7 @@ Window {
                 id: perspectiveCamera
 
                 fieldOfView: 45
-                position: Qt.vector3d(0, 200, 500)
+                position: Qt.vector3d(0, 400, 1500)
             }
         }
 
@@ -58,7 +58,7 @@ Window {
             id: targetHuman
 
             eulerRotation: Qt.vector3d(0, 0, 0)
-            pivot: Qt.vector3d(-10, 0, 0)
+            pivot: Qt.vector3d(-20, 0, 0)
             position: Qt.vector3d(100, -50, 0)
             scale: Qt.vector3d(20, 20, 20)
 

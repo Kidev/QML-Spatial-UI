@@ -19,7 +19,7 @@ Item {
     property bool mouseEnabled: false
     property vector3d offsetLinkEnd: Qt.vector3d(0, 0, 0)
     property vector3d offsetLinkStart: Qt.vector3d(0, 0, 0)
-    property real scaleFactor: root.fixedSize ? 1.0 : root.distanceFactor
+    property real scaleFactor: root.distanceFactor
     property bool showLinker: false
     required property size size
     required property Node target
@@ -36,7 +36,7 @@ Item {
     function updateDistanceFactor() {
         const distance = root.camera.scenePosition.minus(root.target.scenePosition).length();
         const fov = root.camera.fieldOfView * Math.PI / 180.0;
-        const perspectiveScale = (root.baseDistance / distance) * (1 / Math.tan(fov / 2));
+        let perspectiveScale = (root.baseDistance / distance) * (1 / Math.tan(fov / 2));
         if (root.fixedSize) {
             if (root.closeUpScaling) {
                 perspectiveScale = Math.max(1.0, perspectiveScale);
@@ -52,18 +52,17 @@ Item {
         const targetOnScreen = root.camera.mapToViewport(root.target.scenePosition).times(screenSize);
         const targetLinkStartOffset = root.camera.mapToViewport(root.target.scenePosition.plus(root.offsetLinkStart)).times(screenSize);
         const targetLinkEndOffset = root.camera.mapToViewport(root.target.scenePosition.plus(root.offsetLinkEnd)).times(screenSize);
-        root.targetOnScreen = targetOnScreen.z >= 0 ? targetOnScreen.toVector2d() : Qt.vector2d(-10000, -10000);
-        root.targetLinkStartOffset = targetLinkStartOffset.z >= 0 ? targetLinkStartOffset.toVector2d() : Qt.vector2d(-10000, -10000);
-        root.targetLinkEndOffset = targetLinkEndOffset.z >= 0 ? targetLinkEndOffset.toVector2d() : Qt.vector2d(-10000, -10000);
-        if (!root.fixedSize) {
-            root.updateDistanceFactor();
-        }
+        root.targetOnScreen = targetOnScreen.z > 0 ? targetOnScreen.toVector2d() : Qt.vector2d(-10000, -10000);
+        root.targetLinkStartOffset = targetLinkStartOffset.z > 0 ? targetLinkStartOffset.toVector2d() : Qt.vector2d(-10000, -10000);
+        root.targetLinkEndOffset = targetLinkEndOffset.z > 0 ? targetLinkEndOffset.toVector2d() : Qt.vector2d(-10000, -10000);
+        root.updateDistanceFactor();
     }
 
     Component.onCompleted: () => {
-        root.baseDistance = root.camera.position.minus(root.target.scenePosition).length();
+        root.baseDistance = root.camera.scenePosition.minus(root.target.scenePosition).length();
         root.updateSceneProjection();
     }
+    onFixedSizeChanged: () => root.updateDistanceFactor()
     onHoveredChanged: () => root.updateSceneProjection()
 
     Connections {
@@ -100,6 +99,18 @@ Item {
         }
 
         target: root.target
+    }
+
+    Connections {
+        function onHeightChanged() {
+            root.updateSceneProjection();
+        }
+
+        function onWidthChanged() {
+            root.updateSceneProjection();
+        }
+
+        target: Window.window
     }
 
     Item {
