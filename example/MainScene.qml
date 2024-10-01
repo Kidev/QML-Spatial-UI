@@ -86,8 +86,8 @@ Window {
             fixedSize: hovered
             hoverEnabled: true
             mouseEnabled: true
-            offset: Qt.vector3d(0, 150, 0)
-            offsetAnchor: Qt.vector3d(0, 200, 50)
+            offsetLinkEnd: Qt.vector3d(0, 150, 50)
+            offsetLinkStart: Qt.vector3d(0, 0, 0)
             showLinker: true
             size: Qt.size(100, 50)
             target: targetModel
@@ -136,8 +136,8 @@ Window {
             fixedSize: false
             hoverEnabled: true
             mouseEnabled: true
-            offset: Qt.vector3d(0, 150, 0)
-            offsetAnchor: Qt.vector3d(0, 200, 50)
+            offsetLinkEnd: Qt.vector3d(0, 200, 50)
+            offsetLinkStart: Qt.vector3d(0, 125, 0)
             showLinker: true
             size: Qt.size(200, 50)
             target: targetHuman
@@ -177,8 +177,8 @@ Window {
                 Text {
                     anchors.centerIn: parent
                     color: "black"
-                    font.pixelSize: 16 * spatialNameTag.scaleFactor
-                    text: "My name's JEFF"
+                    font.pixelSize: 15.0 * spatialNameTag.scaleFactor
+                    text: "You spin me right 'round,\nbaby, right 'round"
                 }
             }
         }
