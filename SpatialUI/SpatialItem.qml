@@ -36,7 +36,7 @@ Item {
     function updateDistanceFactor() {
         const distance = root.camera.scenePosition.minus(root.target.scenePosition).length();
         const fov = root.camera.fieldOfView * Math.PI / 180.0;
-        let perspectiveScale = (root.baseDistance / distance) * (1 / Math.tan(fov / 2));
+        let perspectiveScale = (Window.height / distance) * (1 / Math.tan(fov / 2));
         if (root.fixedSize) {
             if (root.closeUpScaling) {
                 perspectiveScale = Math.max(1.0, perspectiveScale);
@@ -59,7 +59,7 @@ Item {
     }
 
     Component.onCompleted: () => {
-        root.baseDistance = root.camera.scenePosition.minus(root.target.scenePosition).length();
+        root.baseDistance = 1.0; //root.camera.scenePosition.minus(root.target.scenePosition).length();
         root.updateSceneProjection();
     }
     onFixedSizeChanged: () => root.updateDistanceFactor()

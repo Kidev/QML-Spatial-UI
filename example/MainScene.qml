@@ -26,11 +26,26 @@ Window {
         Node {
             id: originNode
 
+            eulerRotation: Qt.vector3d(0, 0, 0)
+
+            PropertyAnimation on eulerRotation.x {
+                duration: 1000
+                from: 0
+                loops: 1
+                to: -10
+            }
+            PropertyAnimation on eulerRotation.y {
+                duration: 1000
+                from: 0
+                loops: 1
+                to: -45
+            }
+
             PerspectiveCamera {
                 id: perspectiveCamera
 
                 fieldOfView: 45
-                position: Qt.vector3d(0, 400, 1500)
+                position: Qt.vector3d(0, 0, 2000)
             }
         }
 
@@ -86,7 +101,7 @@ Window {
             fixedSize: hovered
             hoverEnabled: true
             mouseEnabled: true
-            offsetLinkEnd: Qt.vector3d(0, 150, 50)
+            offsetLinkEnd: Qt.vector3d(0, 250, 50)
             offsetLinkStart: Qt.vector3d(0, 0, 0)
             showLinker: true
             size: Qt.size(100, 50)
@@ -136,7 +151,7 @@ Window {
             fixedSize: false
             hoverEnabled: true
             mouseEnabled: true
-            offsetLinkEnd: Qt.vector3d(0, 200, 50)
+            offsetLinkEnd: Qt.vector3d(0, 300, 50)
             offsetLinkStart: Qt.vector3d(0, 125, 0)
             showLinker: true
             size: Qt.size(200, 50)
