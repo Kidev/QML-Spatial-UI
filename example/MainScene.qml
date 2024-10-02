@@ -148,6 +148,7 @@ Window {
 
             camera: perspectiveCamera
             closeUpScaling: true
+            depthTest: true
             fixedSize: false
             hoverEnabled: true
             mouseEnabled: true

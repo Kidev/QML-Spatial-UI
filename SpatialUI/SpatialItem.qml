@@ -8,6 +8,7 @@ Item {
     required property PerspectiveCamera camera
     property bool closeUpScaling: false
     default property alias data: contentItem.data
+    property bool depthTest: false
     property real distanceFactor: 1.0
     property bool fixedSize: false
     property bool hoverEnabled: false
@@ -25,8 +26,10 @@ Item {
     property vector2d targetLinkEndOffset: Qt.vector2d(-10000, -10000)
     property vector2d targetLinkStartOffset: Qt.vector2d(-10000, -10000)
     property vector2d targetOnScreen: Qt.vector2d(-10000, -10000)
-    property int zItem: 11
-    property int zLinker: 10
+    property int zDistance: 0
+    property int zItemOffset: 11
+    property int zLinkerOffset: 10
+    property int zOffset: 1000000
 
     signal clicked(MouseEvent event)
     signal entered
@@ -34,6 +37,7 @@ Item {
 
     function updateDistanceFactor() {
         const distance = root.camera.scenePosition.minus(root.target.scenePosition).length();
+        root.zDistance = root.zOffset - Math.round(distance);
         const fov = root.camera.fieldOfView * Math.PI / 180.0;
         let perspectiveScale = (Window.height / distance) * (1 / Math.tan(fov / 2));
         if (root.fixedSize) {
@@ -57,9 +61,7 @@ Item {
         root.updateDistanceFactor();
     }
 
-    Component.onCompleted: () => {
-        root.updateSceneProjection();
-    }
+    Component.onCompleted: () => root.updateSceneProjection()
     onFixedSizeChanged: () => root.updateDistanceFactor()
     onHoveredChanged: () => root.updateSceneProjection()
 
@@ -118,7 +120,7 @@ Item {
         width: root.size.width * root.scaleFactor
         x: root.targetLinkEndOffset.x
         y: root.targetLinkEndOffset.y
-        z: root.zItem
+        z: root.depthTest ? root.zDistance + root.zItemOffset : root.zItemOffset
 
         MouseArea {
             anchors.fill: contentItem
@@ -141,6 +143,6 @@ Item {
         id: linkerShape
 
         visible: root.showLinker
-        z: root.zLinker
+        z: root.depthTest ? root.zDistance + root.zLinkerOffset : root.zLinkerOffset
     }
 }
