@@ -193,7 +193,9 @@ Window {
                     anchors.centerIn: parent
                     color: "black"
                     font.pixelSize: 15.0 * spatialNameTag.scaleFactor
-                    text: "You spin me right 'round,\nbaby, right 'round"
+                    horizontalAlignment: Text.AlignHCenter
+                    text: "You spin me right round\nBaby, right round"
+                    verticalAlignment: Text.AlignVCenter
                 }
             }
         }

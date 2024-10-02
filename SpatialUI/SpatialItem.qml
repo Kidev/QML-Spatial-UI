@@ -5,7 +5,6 @@ import QtQuick.Shapes
 Item {
     id: root
 
-    property real baseDistance: 1.0
     required property PerspectiveCamera camera
     property bool closeUpScaling: false
     default property alias data: contentItem.data
@@ -59,7 +58,6 @@ Item {
     }
 
     Component.onCompleted: () => {
-        root.baseDistance = 1.0; //root.camera.scenePosition.minus(root.target.scenePosition).length();
         root.updateSceneProjection();
     }
     onFixedSizeChanged: () => root.updateDistanceFactor()

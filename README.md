@@ -55,14 +55,20 @@ The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that s
 - **`fixedSize`** [bool]:  
   If `true`, the overlay UI will maintain a constant size on the screen regardless of distance to the camera. Defaults to `false`.
 
+- **`closeUpScaling`** [bool]:  
+  If `true` and if `fixedSize` is `true`, then the size will be allowed to grow to accomodate for close camera proximity. The fixed size hence becomes a minimum screen size. Defaults to `false`.
+
 - **`hoverEnabled`** [bool]:  
   Determines if the overlay UI can react to hover events. If `true`, the `entered()` and `exited()` signals will be emitted when the mouse enters or leaves the item. Defaults to `false`.
 
 - **`mouseEnabled`** [bool]:  
   If `true`, the overlay UI will respond to mouse events such as clicks, enabling the `clicked()` signal. Defaults to `false`.
 
-- **`offset`** [vector3d]:  
+- **`offsetLinkEnd`** [vector3d]:  
   An offset applied to the position of the target model in 3D space. This is used to adjust the relative position of the overlay UI for better alignment with the 3D target. Defaults to `Qt.vector3d(0, 0, 0)`.
+
+- **`offsetLinkStart`** [vector3d]:  
+  An offset applied to the position of the target model in 3D space. This is used to adjust the relative position of start of the linker for better alignment with the 3D target. Defaults to `Qt.vector3d(0, 0, 0)`.
 
 - **`showLinker`** [bool]:  
   If `true`, a line will be drawn connecting the UI overlay to the target model to visually indicate the relationship. Defaults to `false`.
@@ -147,11 +153,26 @@ Window {
         Node {
             id: originNode
 
+            eulerRotation: Qt.vector3d(0, 0, 0)
+
+            PropertyAnimation on eulerRotation.x {
+                duration: 1000
+                from: 0
+                loops: 1
+                to: -10
+            }
+            PropertyAnimation on eulerRotation.y {
+                duration: 1000
+                from: 0
+                loops: 1
+                to: -45
+            }
+
             PerspectiveCamera {
                 id: perspectiveCamera
 
                 fieldOfView: 45
-                position: Qt.vector3d(0, 200, 500)
+                position: Qt.vector3d(0, 0, 2000)
             }
         }
 
@@ -175,6 +196,25 @@ Window {
             ]
         }
 
+        Human {
+            id: targetHuman
+
+            eulerRotation: Qt.vector3d(0, 0, 0)
+            pivot: Qt.vector3d(-20, 0, 0)
+            position: Qt.vector3d(100, -50, 0)
+            scale: Qt.vector3d(20, 20, 20)
+
+            RotationAnimation on eulerRotation.y {
+                direction: RotationAnimation.Counterclockwise
+                duration: 10000
+                from: 360
+                loops: Animation.Infinite
+                to: 0
+            }
+
+            Component.onCompleted: () => eulerRotation.y = 360
+        }
+
         DirectionalLight {
             eulerRotation.x: -30
             eulerRotation.y: -70
@@ -184,10 +224,12 @@ Window {
             id: spatialUI
 
             camera: perspectiveCamera
+            closeUpScaling: true
             fixedSize: hovered
             hoverEnabled: true
             mouseEnabled: true
-            offset: Qt.vector3d(0, 150, 0)
+            offsetLinkEnd: Qt.vector3d(0, 250, 50)
+            offsetLinkStart: Qt.vector3d(0, 0, 0)
             showLinker: true
             size: Qt.size(100, 50)
             target: targetModel
@@ -227,7 +269,66 @@ Window {
                 }
             }
         }
+
+        SpatialItem {
+            id: spatialNameTag
+
+            camera: perspectiveCamera
+            closeUpScaling: true
+            fixedSize: false
+            hoverEnabled: true
+            mouseEnabled: true
+            offsetLinkEnd: Qt.vector3d(0, 300, 50)
+            offsetLinkStart: Qt.vector3d(0, 125, 0)
+            showLinker: true
+            size: Qt.size(200, 50)
+            target: targetHuman
+
+            linker: ShapePath {
+                capStyle: ShapePath.FlatCap
+                joinStyle: ShapePath.BevelJoin
+                pathHints: ShapePath.PathConvex | ShapePath.PathLinear | ShapePath.PathNonIntersecting
+                startX: spatialNameTag.linkerStart.x
+                startY: spatialNameTag.linkerStart.y
+                strokeColor: spatialNameTag.hovered ? "black" : "white"
+                strokeWidth: 4 * spatialNameTag.scaleFactor
+
+                PathLine {
+                    x: spatialNameTag.linkerEnd.x
+                    y: spatialNameTag.linkerEnd.y
+                }
+
+                PathLine {
+                    x: spatialNameTag.linkerEnd.x + 20
+                    y: spatialNameTag.linkerEnd.y
+                }
+
+                PathLine {
+                    x: spatialNameTag.linkerStart.x
+                    y: spatialNameTag.linkerStart.y
+                }
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                border.color: spatialNameTag.hovered ? "black" : "white"
+                border.width: 2
+                color: "white"
+                radius: 25
+
+                Text {
+                    anchors.centerIn: parent
+                    color: "black"
+                    font.pixelSize: 15.0 * spatialNameTag.scaleFactor
+                    horizontalAlignment: Text.AlignHCenter
+                    text: "You spin me right round\nBaby, right round"
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+        }
     }
 }
 ```
 
+### Credits
+- [aaravanimates](https://free3d.com/user/aaravanimates) for the [human 3D model](https://free3d.com/3d-model/rigged-male-human-442626.html) of the example 
