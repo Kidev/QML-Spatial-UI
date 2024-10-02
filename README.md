@@ -61,6 +61,9 @@ The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that s
 - **`depthTest`** [bool]:  
   If `true` then the 2D items will order themselves as if they were in 3D space: if the camera is closer to a target than another, its UI will be displayed on top. Defaults to `false`.
 
+- **`forceTopStacking`** [bool]:  
+  If `true` then the 2D items of this `SpatialItem` will be put on top of their siblings. This is useful to bind to `hovered` for example. If multiple silbings have this on `true`, then they will be displayed in the order in which they appear in the code. Defaults to `false`.
+
 - **`hoverEnabled`** [bool]:  
   Determines if the overlay UI can react to hover events. If `true`, the `entered()` and `exited()` signals will be emitted when the mouse enters or leaves the item. Defaults to `false`.
 
