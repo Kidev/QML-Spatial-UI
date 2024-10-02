@@ -11,25 +11,26 @@ Item {
     property bool depthTest: false
     property real distanceFactor: 1.0
     property bool fixedSize: false
+    property bool forceTopStacking: false
     property bool hoverEnabled: false
     property bool hovered: false
     property alias linker: linkerShape.data
-    property vector2d linkerEnd: Qt.vector2d(root.targetLinkEndOffset.x + (root.size.width / 2) * root.scaleFactor, root.targetLinkEndOffset.y + (root.size.height / 2) * root.scaleFactor)
-    property vector2d linkerStart: Qt.vector2d(root.targetLinkStartOffset.x, root.targetLinkStartOffset.y)
+    readonly property vector2d linkerEnd: Qt.vector2d(root.targetLinkEndOffset.x + (root.size.width / 2) * root.scaleFactor, root.targetLinkEndOffset.y + (root.size.height / 2) * root.scaleFactor)
+    readonly property vector2d linkerStart: Qt.vector2d(root.targetLinkStartOffset.x, root.targetLinkStartOffset.y)
     property bool mouseEnabled: false
     property vector3d offsetLinkEnd: Qt.vector3d(0, 0, 0)
     property vector3d offsetLinkStart: Qt.vector3d(0, 0, 0)
-    property real scaleFactor: root.distanceFactor
+    readonly property real scaleFactor: root.distanceFactor
     property bool showLinker: false
     required property size size
     property int stackingOrder: 0
     property int stackingOrderLinker: -1
     required property Node target
-    property vector2d targetLinkEndOffset: Qt.vector2d(-10000, -10000)
-    property vector2d targetLinkStartOffset: Qt.vector2d(-10000, -10000)
-    property vector2d targetOnScreen: Qt.vector2d(-10000, -10000)
+    property vector2d targetLinkEndOffset
+    property vector2d targetLinkStartOffset
+    property vector2d targetOnScreen
     property int zDistance: 0
-    readonly property int zOffset: 1000000
+    readonly property int zOffset: 1000000000
 
     signal clicked(MouseEvent event)
     signal entered
@@ -61,7 +62,15 @@ Item {
         root.updateDistanceFactor();
     }
 
-    z: root.depthTest ? root.zDistance : root.stackingOrder
+    z: {
+        if (root.forceTopStacking) {
+            return root.zOffset + 1;
+        }
+        if (root.depthTest) {
+            return root.zDistance;
+        }
+        return root.stackingOrder;
+    }
 
     Component.onCompleted: () => root.updateSceneProjection()
     onFixedSizeChanged: () => root.updateDistanceFactor()

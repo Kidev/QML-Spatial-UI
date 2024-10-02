@@ -99,7 +99,8 @@ Window {
             camera: perspectiveCamera
             closeUpScaling: true
             depthTest: true
-            fixedSize: hovered
+            fixedSize: spatialUI.hovered
+            forceTopStacking: spatialUI.hovered
             hoverEnabled: true
             mouseEnabled: true
             offsetLinkEnd: Qt.vector3d(0, 250, 50)
