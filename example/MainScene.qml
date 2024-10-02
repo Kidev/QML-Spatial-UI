@@ -98,9 +98,11 @@ Window {
 
             camera: perspectiveCamera
             closeUpScaling: true
+            depthTest: false
             fixedSize: hovered
             hoverEnabled: true
             mouseEnabled: true
+            objectName: "cube"
             offsetLinkEnd: Qt.vector3d(0, 250, 50)
             offsetLinkStart: Qt.vector3d(0, 0, 0)
             showLinker: true
@@ -148,10 +150,11 @@ Window {
 
             camera: perspectiveCamera
             closeUpScaling: true
-            depthTest: true
+            depthTest: false
             fixedSize: false
             hoverEnabled: true
             mouseEnabled: true
+            objectName: "human"
             offsetLinkEnd: Qt.vector3d(0, 300, 50)
             offsetLinkStart: Qt.vector3d(0, 125, 0)
             showLinker: true

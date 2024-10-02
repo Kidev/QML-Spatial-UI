@@ -22,14 +22,14 @@ Item {
     property real scaleFactor: root.distanceFactor
     property bool showLinker: false
     required property size size
+    property int stackingOrder: 0
+    property int stackingOrderLinker: -1
     required property Node target
     property vector2d targetLinkEndOffset: Qt.vector2d(-10000, -10000)
     property vector2d targetLinkStartOffset: Qt.vector2d(-10000, -10000)
     property vector2d targetOnScreen: Qt.vector2d(-10000, -10000)
     property int zDistance: 0
-    property int zItemOffset: 11
-    property int zLinkerOffset: 10
-    property int zOffset: 1000000
+    readonly property int zOffset: 1000000
 
     signal clicked(MouseEvent event)
     signal entered
@@ -61,6 +61,8 @@ Item {
         root.updateDistanceFactor();
     }
 
+    z: root.depthTest ? root.zDistance : root.stackingOrder
+
     Component.onCompleted: () => root.updateSceneProjection()
     onFixedSizeChanged: () => root.updateDistanceFactor()
     onHoveredChanged: () => root.updateSceneProjection()
@@ -90,6 +92,14 @@ Item {
     }
 
     Connections {
+        function onEulerRotationChanged() {
+            root.updateSceneProjection();
+        }
+
+        function onRotationChanged() {
+            root.updateSceneProjection();
+        }
+
         function onScenePositionChanged() {
             root.updateSceneProjection();
         }
@@ -120,7 +130,6 @@ Item {
         width: root.size.width * root.scaleFactor
         x: root.targetLinkEndOffset.x
         y: root.targetLinkEndOffset.y
-        z: root.depthTest ? root.zDistance + root.zItemOffset : root.zItemOffset
 
         MouseArea {
             anchors.fill: contentItem
@@ -143,6 +152,6 @@ Item {
         id: linkerShape
 
         visible: root.showLinker
-        z: root.depthTest ? root.zDistance + root.zLinkerOffset : root.zLinkerOffset
+        z: root.stackingOrderLinker
     }
 }
