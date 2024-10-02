@@ -98,11 +98,10 @@ Window {
 
             camera: perspectiveCamera
             closeUpScaling: true
-            depthTest: false
+            depthTest: true
             fixedSize: hovered
             hoverEnabled: true
             mouseEnabled: true
-            objectName: "cube"
             offsetLinkEnd: Qt.vector3d(0, 250, 50)
             offsetLinkStart: Qt.vector3d(0, 0, 0)
             showLinker: true
@@ -124,10 +123,11 @@ Window {
                 }
             }
 
-            onClicked: event => console.log(`event=${event}`)
+            onClicked: event => {
+                console.log(`event=${event}`);
+            }
             onEntered: () => console.log(`ENTER`)
             onExited: () => console.log(`EXIT`)
-            onHoveredChanged: () => console.log(`hovered=${hovered}`)
 
             Rectangle {
                 anchors.fill: parent
@@ -150,11 +150,10 @@ Window {
 
             camera: perspectiveCamera
             closeUpScaling: true
-            depthTest: false
+            depthTest: true
             fixedSize: false
             hoverEnabled: true
             mouseEnabled: true
-            objectName: "human"
             offsetLinkEnd: Qt.vector3d(0, 300, 50)
             offsetLinkStart: Qt.vector3d(0, 125, 0)
             showLinker: true

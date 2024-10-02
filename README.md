@@ -58,6 +58,9 @@ The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that s
 - **`closeUpScaling`** [bool]:  
   If `true` and if `fixedSize` is `true`, then the size will be allowed to grow to accomodate for close camera proximity. The fixed size hence becomes a minimum screen size. Defaults to `false`.
 
+- **`depthTest`** [bool]:  
+  If `true` then the 2D items will order themselves as if they were in 3D space: if the camera is closer to a target than another, its UI will be displayed on top. Defaults to `false`.
+
 - **`hoverEnabled`** [bool]:  
   Determines if the overlay UI can react to hover events. If `true`, the `entered()` and `exited()` signals will be emitted when the mouse enters or leaves the item. Defaults to `false`.
 
@@ -73,11 +76,11 @@ The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that s
 - **`showLinker`** [bool]:  
   If `true`, a line will be drawn connecting the UI overlay to the target model to visually indicate the relationship. Defaults to `false`.
 
-- **`zItem`** [bool]:  
-  The z value of the contents of the UI. Defaults to `11`.
+- **`stackingOrder`** [real]:  
+  The z value of the contents of the UI. It competes with all its other siblings only. Only active if `depthTest` is `false`. Defaults to `0`.
 
-- **`zLinker`** [bool]:  
-  The z value of the linker shape. Defaults to `10` (so below the UI).
+- **`stackingOrderLinker`** [real]:  
+  The z value of the linker shape. Being a children of the UI, it only competes with it, and it can be placed behind by using `-1`. Defaults to `-1`.
 
 #### Read-only Data
 

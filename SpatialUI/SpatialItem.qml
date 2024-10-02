@@ -92,14 +92,6 @@ Item {
     }
 
     Connections {
-        function onEulerRotationChanged() {
-            root.updateSceneProjection();
-        }
-
-        function onRotationChanged() {
-            root.updateSceneProjection();
-        }
-
         function onScenePositionChanged() {
             root.updateSceneProjection();
         }
