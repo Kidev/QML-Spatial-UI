@@ -46,7 +46,7 @@ The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that s
 - **`size`** (**required**) [size]:  
   The base size of the overlay UI in screen space, before applying scaling based on distance. This property can be used to adjust the perceived size of the overlay.
 
-- **`target`** (**required**) [Model]:  
+- **`target`** (**required**) [Node]:  
   The 3D model to which the overlay UI is linked. The position of this model is used to determine the screen position for displaying the overlay.
 
 - **`linker`** [ShapePath]:  
@@ -99,16 +99,10 @@ The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that s
 - **`scaleFactor`** [real]:  
   A scaling factor used to adjust the size of the overlay UI based on the distance between the camera and the target. This ensures that the overlay appears to have a fixed size in 3D space, despite changes in perspective: use it to scale font sizes, stroke width...
 
-#### Signals
+#### Signals and aliases
 
-- **`clicked(MouseEvent)`**:  
-  Emitted when the overlay UI is clicked. The `MouseEvent` contains information about the click event, such as the position and button used.
-
-- **`entered()`**:  
-  Emitted when the mouse cursor enters the overlay UI.
-
-- **`exited()`**:  
-  Emitted when the mouse cursor leaves the overlay UI.
+- Signals available: **`canceled`**, **`clicked(MouseEvent mouse)`**, **`doubleClicked(MouseEvent mouse)`**, **`entered`**, **`exited`**, **`positionChanged(MouseEvent mouse)`**, **`pressAndHold(MouseEvent mouse)`**, **`pressed(MouseEvent mouse)`**, **`released(MouseEvent mouse)`**, **`wheel(WheelEvent wheel)`**
+- The `MouseArea` whose signals are reshared by the `SpatialItem` can be accessed freely using the `mouseArea` property alias of `SpatialItem`
 
 ### Add to your project
 - Add the project as a submodule from your project root
@@ -337,4 +331,5 @@ Window {
 ```
 
 ### Credits
-- [aaravanimates](https://free3d.com/user/aaravanimates) for the [human 3D model](https://free3d.com/3d-model/rigged-male-human-442626.html) of the example 
+- [aaravanimates](https://free3d.com/user/aaravanimates) for the [human 3D model](https://free3d.com/3d-model/rigged-male-human-442626.html) of the example (Personal Use License)
+- [Roundicons](https://www.flaticon.com/authors/roundicons) for the [move icon](https://www.flaticon.com/free-icons/move) of the example (Flaticon License)

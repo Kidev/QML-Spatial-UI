@@ -17,6 +17,7 @@ Item {
     property alias linker: linkerShape.data
     readonly property vector2d linkerEnd: Qt.vector2d(root.targetLinkEndOffset.x + (root.size.width / 2) * root.scaleFactor, root.targetLinkEndOffset.y + (root.size.height / 2) * root.scaleFactor)
     readonly property vector2d linkerStart: Qt.vector2d(root.targetLinkStartOffset.x, root.targetLinkStartOffset.y)
+    property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
     property vector3d offsetLinkEnd: Qt.vector3d(0, 0, 0)
     property vector3d offsetLinkStart: Qt.vector3d(0, 0, 0)
@@ -32,9 +33,16 @@ Item {
     property int zDistance: 0
     readonly property int zOffset: 1000000000
 
-    signal clicked(MouseEvent event)
+    signal canceled
+    signal clicked(MouseEvent mouse)
+    signal doubleClicked(MouseEvent mouse)
     signal entered
     signal exited
+    signal positionChanged(MouseEvent mouse)
+    signal pressAndHold(MouseEvent mouse)
+    signal pressed(MouseEvent mouse)
+    signal released(MouseEvent mouse)
+    signal wheel(WheelEvent wheel)
 
     function updateDistanceFactor() {
         const distance = root.camera.scenePosition.minus(root.target.scenePosition).length();
@@ -133,11 +141,16 @@ Item {
         y: root.targetLinkEndOffset.y
 
         MouseArea {
+            id: itemMouseArea
+
             anchors.fill: contentItem
             enabled: root.mouseEnabled
             hoverEnabled: root.hoverEnabled
+            z: root.z + 1
 
-            onClicked: event => root.clicked(event)
+            onCanceled: () => root.canceled()
+            onClicked: mouse => root.clicked(mouse)
+            onDoubleClicked: mouse => root.doubleClicked(mouse)
             onEntered: () => {
                 root.hovered = true;
                 root.entered();
@@ -146,6 +159,11 @@ Item {
                 root.hovered = false;
                 root.exited();
             }
+            onPositionChanged: mouse => root.positionChanged(mouse)
+            onPressAndHold: mouse => root.pressAndHold(mouse)
+            onPressed: mouse => root.pressed(mouse)
+            onReleased: mouse => root.released(mouse)
+            onWheel: wheel => root.wheel(wheel)
         }
     }
 

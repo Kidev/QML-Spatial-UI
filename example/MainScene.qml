@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick3D
+import QtQuick.Controls
 import QtQuick3D.Helpers
 import QtQuick.Shapes
 import SpatialUI
@@ -8,7 +9,7 @@ Window {
     id: root
 
     height: 480
-    title: qsTr("SpatialUI Example")
+    title: "SpatialUI Example"
     visible: true
     width: 640
 
@@ -19,8 +20,23 @@ Window {
         camera: perspectiveCamera
 
         environment: SceneEnvironment {
-            backgroundMode: SceneEnvironment.Color
-            clearColor: "skyblue"
+            backgroundMode: SceneEnvironment.SkyBox
+
+            lightProbe: Texture {
+                textureData: ProceduralSkyTextureData {
+                }
+            }
+        }
+
+        AxisHelper {
+            enableAxisLines: true
+            enableXYGrid: false
+            enableXZGrid: true
+            enableYZGrid: false
+            eulerRotation.y: 90
+            gridColor: "#ffffff"
+            gridOpacity: 1
+            scale: Qt.vector3d(5, 1, 5)
         }
 
         Node {
@@ -50,6 +66,8 @@ Window {
         }
 
         OrbitCameraController {
+            id: orbitCameraController
+
             anchors.fill: parent
             camera: perspectiveCamera
             origin: originNode
@@ -59,7 +77,7 @@ Window {
         Model {
             id: targetModel
 
-            position: Qt.vector3d(0, 0, 0)
+            position: Qt.vector3d(0, 50, 0)
             source: "#Cube"
 
             materials: [
@@ -69,12 +87,28 @@ Window {
             ]
         }
 
+        Model {
+            id: raycastPlane
+
+            eulerRotation.x: -90
+            objectName: "raycastPlane"
+            position: Qt.vector3d(0, -1, 0)
+            scale: Qt.vector3d(1000, 1000, 1)
+            source: "#Rectangle"
+
+            materials: [
+                DefaultMaterial {
+                    diffuseColor: "grey"
+                }
+            ]
+        }
+
         Human {
             id: targetHuman
 
             eulerRotation: Qt.vector3d(0, 0, 0)
             pivot: Qt.vector3d(-20, 0, 0)
-            position: Qt.vector3d(100, -50, 0)
+            position: Qt.vector3d(100, 0, 0)
             scale: Qt.vector3d(20, 20, 20)
 
             RotationAnimation on eulerRotation.y {
@@ -95,6 +129,8 @@ Window {
 
         SpatialItem {
             id: spatialUI
+
+            property bool dragging: false
 
             camera: perspectiveCamera
             closeUpScaling: true
@@ -124,17 +160,34 @@ Window {
                 }
             }
 
-            onClicked: event => {
-                console.log(`event=${event}`);
+            onPositionChanged: mouse => {
+                if (spatialUI.dragging) {
+                    let pickResults = view3D.pickAll(mouse.x, mouse.y);
+                    for (let i = 0; i < pickResults.length; i++) {
+                        let pickResult = pickResults[i];
+                        if (pickResult.objectHit.objectName === "raycastPlane") {
+                            spatialUI.target.position = pickResult.scenePosition;
+                        }
+                    }
+                }
             }
-            onEntered: () => console.log(`ENTER`)
-            onExited: () => console.log(`EXIT`)
+            onPressed: mouse => {
+                if (mouse.buttons & Qt.RightButton) {
+                    if (!spatialUI.dragging) {
+                        spatialUI.mouseArea.cursorShape = Qt.ClosedHandCursor;
+                        spatialUI.dragging = true;
+                    } else {
+                        spatialUI.dragging = false;
+                        spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
+                    }
+                }
+            }
 
             Rectangle {
                 anchors.fill: parent
                 border.color: spatialUI.hovered ? "white" : "black"
                 border.width: spatialUI.hovered ? 4 : 2
-                color: spatialUI.hovered ? "black" : "white"
+                color: spatialUI.dragging ? "white" : (spatialUI.hovered ? "black" : "white")
                 radius: 10
 
                 Text {
@@ -142,6 +195,17 @@ Window {
                     color: spatialUI.hovered ? "white" : "black"
                     font.pixelSize: 16 * spatialUI.scaleFactor
                     text: "SpatialUI"
+                    visible: !spatialUI.dragging
+                }
+
+                Image {
+                    id: moveIcon
+
+                    anchors.centerIn: parent
+                    height: 20 * spatialUI.scaleFactor
+                    source: "img/move.png"
+                    visible: spatialUI.dragging
+                    width: 20 * spatialUI.scaleFactor
                 }
             }
         }
@@ -168,7 +232,7 @@ Window {
                 startX: spatialNameTag.linkerStart.x
                 startY: spatialNameTag.linkerStart.y
                 strokeColor: spatialNameTag.hovered ? "black" : "white"
-                strokeWidth: 4 * spatialNameTag.scaleFactor
+                strokeWidth: 1 * spatialNameTag.scaleFactor
 
                 PathLine {
                     x: spatialNameTag.linkerEnd.x
@@ -176,7 +240,7 @@ Window {
                 }
 
                 PathLine {
-                    x: spatialNameTag.linkerEnd.x + 20
+                    x: spatialNameTag.linkerEnd.x + 20 * spatialNameTag.scaleFactor
                     y: spatialNameTag.linkerEnd.y
                 }
 

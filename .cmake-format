@@ -1,0 +1,188 @@
+# ----------------------------------
+# Options affecting listfile parsing
+# ----------------------------------
+with section("parse"):
+
+    # Specify structure for custom cmake functions
+    additional_commands = {
+        'qt_add_big_resources': {'pargs': '1+', 'flags': [], 'kwargs': {}},
+        'qt_add_binary_resources': {'pargs': '2+', 'flags': ['DESTINATION'], 'kwargs': {}},
+        'qt_add_executable': {'pargs': '1+', 'flags': ['WIN32', 'MACOSX_BUNDLE', 'MANUAL_FINALIZATION'], 'kwargs': {}},
+        'qt_add_library': {'pargs': '1+', 'flags': ['STATIC', 'SHARED', 'MODULE', 'INTERFACE', 'OBJECT', 'MANUAL_FINALIZATION'], 'kwargs': {}},
+        'qt_add_plugin': {'pargs': '1+', 'flags': ['SHARED', 'STATIC', 'MANUAL_FINALIZATION'], 'kwargs': {'CLASS_NAME': 1, 'OUTPUT_TARGETS': 1}},
+        'qt_add_resources': {'pargs': '2+', 'flags': ['PREFIX', 'LANG', 'BASE', 'BIG_RESOURCES'], 'kwargs': {'OUTPUT_TARGETS': 1}},
+        'qt_add_qml_module': {'pargs': '2+', 'flags': ['STATIC', 'SHARED', 'NO_PLUGIN', 'NO_CACHEGEN', 'NO_LINT', 'NO_RESOURCE_TARGET_PATH'], 'kwargs': {'URI': 1, 'VERSION': 1, 'CLASS_NAME': 1, 'QML_FILES': '*', 'RESOURCES': '*', 'RESOURCE_PREFIX': 1, 'IMPORTS': '*'}},
+        'qt_generate_deploy_qml_app_script': {'pargs': '1+', 'flags': ['NO_UNSUPPORTED_PLATFORM_ERROR', 'NO_TRANSLATIONS', 'MACOS_BUNDLE_POST_BUILD'], 'kwargs': {'OUTPUT_SCRIPT': 1}},
+        'qt_generate_deploy_script': {'pargs': '1+', 'flags': [], 'kwargs': {'OUTPUT_SCRIPT': 1, 'TARGET': 1, 'NAME': 1}},
+        'qt_set_finalizer_mode': {'pargs': '2+', 'flags': [], 'kwargs': {}},
+        'qt_finalize_target': {'pargs': '1+', 'flags': [], 'kwargs': {}},
+        'qt_wrap_cpp': {'pargs': '1+', 'flags': [], 'kwargs': {'TARGET': 1, 'OPTIONS': '*', 'DEPENDS': '*'}},
+        'qt_deploy_qml_imports': {'pargs': '1+', 'flags': [], 'kwargs': {'TARGET': 1, 'QML_DIR': 1}},
+    }
+
+    # Override configurations per-command where available
+    override_spec = {}
+
+    # Specify variable tags.
+    vartags = []
+
+    # Specify property tags.
+    proptags = []
+
+# -----------------------------
+# Options affecting formatting.
+# -----------------------------
+with section("format"):
+
+    # Disable formatting entirely, making cmake-format a no-op
+    disable = False
+
+    # How wide to allow formatted cmake files
+    line_width = 100
+
+    # How many spaces to tab for indent
+    tab_size = 4
+
+    # If true, lines are indented using tab characters instead of <tab_size> spaces
+    use_tabchars = False
+
+    # If a positional argument group contains more than this many arguments, then
+    # force it to a vertical layout
+    max_pargs_hwrap = 3
+
+    # If a cmdline positional group consumes more than this many lines without
+    # nesting, then invalidate the layout (and nest)
+    max_rows_cmdline = 1
+
+    # Separate flow control names from their parentheses with a space
+    separate_ctrl_name_with_space = True
+
+    # Separate function names from parentheses with a space
+    separate_fn_name_with_space = False
+
+    # Dangle the closing parenthesis on its own line if wrapped
+    dangle_parens = True
+
+    # Align closing parenthesis to the prefix when wrapping
+    dangle_align = 'prefix'
+
+    # Minimal prefix characters before forcing a layout (helps maintain consistent readability)
+    min_prefix_chars = 2
+
+    # Force reject un-nested layouts for longer statements
+    max_prefix_chars = 12
+
+    # Limit horizontal wrap lines to ensure readability
+    max_lines_hwrap = 1
+
+    # Use Unix-style line endings
+    line_ending = 'unix'
+
+    # Command names should be formatted in canonical case
+    command_case = 'canonical'
+
+    # Keywords should be unchanged in case
+    keyword_case = 'unchanged'
+
+    # Always wrap specific command names
+    always_wrap = []
+
+    # Enable sorting of known sortable argument lists
+    enable_sort = True
+
+    # Disable automatic inference of sortable argument lists
+    autosort = False
+
+    # Require valid layouts; do not write files if unable to produce a valid format
+    require_valid_layout = True
+
+    # A dictionary mapping layout nodes to wrap decisions
+    layout_passes = {}
+
+# ------------------------------------------------
+# Options affecting comment reflow and formatting.
+# ------------------------------------------------
+with section("markup"):
+
+    # Character to use for bulleted lists
+    bullet_char = '*'
+
+    # Character to use after numerals in enumerated lists
+    enum_char = '.'
+
+    # Preserve the first comment block (e.g., copyright/license statements)
+    first_comment_is_literal = True
+
+    # Disable reflowing comment blocks that match this pattern
+    literal_comment_pattern = None
+
+    # Regular expression to match preformat fences in comments
+    fence_pattern = '^\\s*([`~]{3}[`~]*)(.*)$'
+
+    # Regular expression to match rulers in comments
+    ruler_pattern = '^\\s*[^\\w\\s]{3}.*[^\\w\\s]{3}$'
+
+    # Pattern for explicitly trailing comments
+    explicit_trailing_pattern = '#<'
+
+    # Minimum length for hash rulers
+    hashruler_min_length = 3
+
+    # Normalize hash rulers to fill the column
+    canonicalize_hashrulers = True
+
+    # Enable comment markup parsing and reflow
+    enable_markup = True
+
+# ----------------------------
+# Options affecting the linter
+# ----------------------------
+with section("lint"):
+
+    # Disable specific lint codes
+    disabled_codes = []
+
+    # Patterns describing valid function, macro, variable, and keyword names
+    function_pattern = '[0-9a-z_]+'
+    macro_pattern = '[0-9A-Z_]+'
+    global_var_pattern = '[A-Z][0-9A-Z_]+'
+    internal_var_pattern = '_[A-Z][0-9A-Z_]+'
+    local_var_pattern = '[a-z][a-z0-9_]+'
+    private_var_pattern = '_[0-9a-z_]+'
+    public_var_pattern = '[A-Z][0-9A-Z_]+'
+    argument_var_pattern = '[a-z][a-z0-9_]+'
+    keyword_pattern = '[A-Z][0-9A-Z_]+'
+
+    # Limit conditions for custom parser heuristic
+    max_conditionals_custom_parser = 2
+
+    # Control spacing between statements
+    min_statement_spacing = 1
+    max_statement_spacing = 1
+
+    # Set thresholds for maximum branches, returns, arguments, and statements
+    max_returns = 6
+    max_branches = 12
+    max_arguments = 5
+    max_localvars = 15
+    max_statements = 50
+
+# -------------------------------
+# Options affecting file encoding
+# -------------------------------
+with section("encode"):
+
+    # Do not emit the unicode byte-order mark (BOM)
+    emit_byteorder_mark = False
+
+    # Specify input and output file encodings
+    input_encoding = 'utf-8'
+    output_encoding = 'utf-8'
+
+# -------------------------------------
+# Miscellaneous configurations options.
+# -------------------------------------
+with section("misc"):
+
+    # Dictionary containing any per-command configuration overrides
+    per_command = {}

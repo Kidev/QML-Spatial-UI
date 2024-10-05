@@ -1,23 +1,19 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QtQuick3D/qquick3d.h>
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app {argc, argv};
+    QGuiApplication app(argc, argv);
+
+    QSurfaceFormat::setDefaultFormat(QQuick3D::idealSurfaceFormat());
+    qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
 
     QQmlApplicationEngine engine;
-
-    QObject::connect(
-        &engine,
-        &QQmlApplicationEngine::objectCreated,
-        &app,
-        [&engine](QObject *obj, const QUrl &) {
-            if (!obj && engine.rootObjects().isEmpty())
-                QCoreApplication::exit(-1);
-        },
-        Qt::QueuedConnection);
-
-    engine.loadFromModule("example", "MainScene");
+    engine.load(QUrl(QStringLiteral("qrc:/MainScene.qml")));
+    if (engine.rootObjects().isEmpty()) {
+        return -1;
+    }
 
     return app.exec();
 }
