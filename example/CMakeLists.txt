@@ -1,10 +1,6 @@
 set(EXAMPLE_SOURCES main.cpp)
-
 set(EXAMPLE_QML MainScene.qml Human.qml)
-
 set(EXAMPLE_RESOURCES meshes/human.mesh img/move.png img/favicon.ico)
-
-qt_policy(SET QTP0001 NEW)
 
 qt_add_executable(exampleExec ${EXAMPLE_SOURCES})
 
@@ -32,8 +28,6 @@ target_compile_options(exampleExec PUBLIC -Wall -Werror -Wpedantic)
 set_target_properties(
     exampleExec
     PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER org.kidev.spatialui
-               MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-               MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
                MACOSX_BUNDLE TRUE
                WIN32_EXECUTABLE TRUE
 )
@@ -45,7 +39,6 @@ target_link_libraries(
             Qt6::Quick
             Qt6::Quick3D
             Qt6::Qml
-            Qt6::QuickControls2
     PUBLIC SpatialUILibplugin
 )
 

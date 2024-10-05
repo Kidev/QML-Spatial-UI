@@ -1,108 +1,96 @@
 # QML Spatial UI
-The `SpatialItem` component for QtQuick3D allows for creating 2D overlays that stay positioned over 3D models in a `View3D` scene, maintaining a constant perceived size despite changes in camera position or model distance. This is useful for adding labels, controls, or indicators to objects in a 3D environment, enhancing interactivity and context.
+QML Spatial UI is a library designed for creating interactive and dynamic 2D overlays for 3D models in a QML-based user interface. It provides a flexible way to link 2D elements, such as labels, icons, or controls, to specific objects in 3D space, while maintaining the proper visual relationship as the camera or objects move. This makes it particularly useful for creating augmented reality interfaces, games, or spatial annotations. 
 
-### Demo
-[A demo of `SpatialItem` in your browser is available here](#).
+## Demo
 
-### Features
+ [A demo of SpatialItem in your browser is available here](#). \
+ This demo showcases the interaction between 2D overlays and 3D objects, demonstrating how the UI elements dynamically adjust to camera movements. Moreover, it highlights the possibilities of the tool by implementing a 3D move tool: just press and hold left mouse button on the "SpatialUI" text!
 
-- **2D Content in 3D Space**  
-  Easily add any Qt Quick item (`Rectangle`, `Text`, `Image`, etc.) as children of `SpatialItem`, rendering them in an overlay above the 3D world. This allows for flexible, rich spaptial UI elements in 3D environments.
+## Features
 
-- **Billboard in Overlay**  
-  The item always faces the camera, ensuring visibility from any angle, and can be rendered in front of 3D objects since it is not part of the 3D world. This creates a clear and accessible visual representation.
+- **2D Overlay Anchored to 3D Models**: Easily attach 2D UI elements to 3D models in a scene, ensuring they move and stay in place relative to their corresponding targets.
+- **Perspective Scaling**: The overlay size can be adjusted automatically based on distance from the camera, providing a realistic spatial feel.
+- **Customizable Linkers**: Add visual linkers between overlays and 3D objects, with options to customize color, width, and style, providing a clear connection between information and its related model.
+- **Hover and Mouse Interaction**: Enable user interactions with overlays, including hover effects, clicks, and other mouse events, suitable for creating interactive UI elements.
+- **Depth Ordering**: Manage the depth of overlay elements, with support for depth testing and force stacking to ensure the correct display hierarchy.
+- **Fixed and Dynamic Sizing**: Choose between fixed overlay sizes, regardless of distance, or allow overlays to scale based on camera proximity.
+- **Offset Adjustments**: Fine-tune the overlay positioning using offsets to ensure perfect alignment with the target 3D model.
+- **Linker Visibility Control**: Toggle the visibility of linkers to highlight or simplify the display, depending on user needs.
+- **Dynamic Signal Handling**: Use built-in signals like `clicked()`, `pressed()`, `entered()`, and more to add interactivity to spatial UI components.
 
-- **Offset Positioning**  
-  Precisely position the content relative to its anchor point in 3D space using the `offset` property. This is useful for fine-tuning the location of the overlay UI in relation to the associated 3D model.
+## Documentation: SpatialItem
 
-- **3D Linker**  
-  Optionally display a customizable indicator (line or shape) between the anchor point and the content, providing a visual link to the 3D object it's associated with. This helps to clearly establish a connection between 2D overlays and their 3D counterparts.
+### Properties
 
-- **Dynamic Sizing**  
-  Choose between a fixed size in 3D world space or a size that adapts based on the camera distance. This allows you to keep the UI consistent in appearance whether the camera is near or far, depending on the user experience you're aiming to provide.
+- **data (_default_) [Item]**: Represents the content of the overlay UI. This can be customized to show specific information, such as labels, icons, or controls. As the default property, children of SpatialItem are automatically assigned to it.
+  
+- **camera (_required_) [PerspectiveCamera]**: Defines the reference camera for this SpatialItem. It must be a PerspectiveCamera inside a Node, which will be used to compute the distance to the target and project its position to screen space.
+  
+- **size (_required_) [size]**: The base size of the overlay UI in screen space before applying scaling based on distance. This property can be used to adjust the perceived size of the overlay.
 
-- **Screen-Space Alignment**  
-  When using fixed-distance-based sizing, the content behaves like a 2D element, making it straightforward to control its size and alignment.
+- **target (_required_) [Node]**: The 3D model to which the overlay UI is linked. The position of this model determines the screen position for displaying the overlay.
 
-- **Attachment Options**  
-  Easily anchor the content to 3D world entities, allowing for flexible positioning and association with various elements in the scene.
+- **linker [ShapePath]**: Defines the visual appearance of the linker line between the overlay and the target model. This property can be customized to modify attributes like color, width, and style of the linker. There is no default, so here is a simple line joining the target to the UI:
+```QML
+ShapePath {
+    startX: spatialUI.linkerStart.x
+    startY: spatialUI.linkerStart.y
+    strokeColor: "black"
+    strokeWidth: 4 * spatialUI.scaleFactor
+    PathLine {
+        x: spatialUI.linkerEnd.x
+        y: spatialUI.linkerEnd.y
+    }
+}
+```
 
-- **Interactive Events**  
-  Receive events when the item is hovered over, clicked, or touched, enabling interactive overlays. Use `hoverEnabled` and `mouseEnabled` to define the interaction behavior.
+- **fixedSize [bool]**: If true, the overlay UI will maintain a constant size on the screen regardless of distance to the camera. Defaults to false.
 
-- **Dynamic Property Changes**  
-  All properties of `SpatialItem` can be updated dynamically, allowing for responsive and interactive 3D UIs that change based on user actions or other conditions in the application.
+- **closeUpScaling [bool]**: If true and if fixedSize is true, then the size will be allowed to grow to accommodate close camera proximity. The fixed size hence becomes a minimum screen size. Defaults to false.
 
-### Documentation: SpatialItem
+- **depthTest [bool]**: If true, then the 2D items will order themselves as if they were in 3D space: if the camera is closer to a target than another, its UI will be displayed on top. Defaults to false.
 
-#### Properties
+- **forceTopStacking [bool]**: If true, then the 2D items of this SpatialItem will be placed on top of their siblings. This is useful for bindings such as hovering. If multiple siblings have this set to true, they will be displayed in the order they appear in the code. Defaults to false.
 
-- **`data`** (**default**) [Item]:  
-  Represents the content of the overlay UI. This can be customized to show specific information, such as labels, icons, or controls. As the default property, this means a children of `SpatialItem` will get assigned to it automatically.
+- **hoverEnabled [bool]**: Determines if the overlay UI can react to hover events. If true, the `entered()` and `exited()` signals will be emitted when the mouse enters or leaves the item. Defaults to false.
 
-- **`camera`** (**required**) [PerspectiveCamera]:  
-  Defines the reference camera for this SpatialItem. It must be a `PerspectiveCamera` inside a `Node`, which will be used to compute the distance to the target and project its position to the screen space.
+- **mouseEnabled [bool]**: If true, the overlay UI will respond to mouse events such as clicks, enabling the `clicked()` signal. Defaults to false.
 
-- **`size`** (**required**) [size]:  
-  The base size of the overlay UI in screen space, before applying scaling based on distance. This property can be used to adjust the perceived size of the overlay.
+- **offsetLinkEnd [vector3d]**: An offset applied to the position of the target model in 3D space. This adjusts the relative position of the overlay UI for better alignment with the 3D target. Defaults to `Qt.vector3d(0, 0, 0)`.
 
-- **`target`** (**required**) [Node]:  
-  The 3D model to which the overlay UI is linked. The position of this model is used to determine the screen position for displaying the overlay.
+- **offsetLinkStart [vector3d]**: An offset applied to the position of the target model in 3D space. This adjusts the relative position of the start of the linker for better alignment with the 3D target. Defaults to `Qt.vector3d(0, 0, 0)`.
 
-- **`linker`** [ShapePath]:  
-  Defines the visual appearance of the linker line between the overlay and the target model. This property can be customized to modify attributes like color, width, and style of the linker.
+- **showLinker [bool]**: If true, a line will be drawn connecting the UI overlay to the target model to visually indicate the relationship. Defaults to false.
 
-- **`fixedSize`** [bool]:  
-  If `true`, the overlay UI will maintain a constant size on the screen regardless of distance to the camera. Defaults to `false`.
+- **stackingOrder [real]**: The z-value of the contents of the UI. It competes with all its other siblings only and is active only if `depthTest` is false. Defaults to 0.
 
-- **`closeUpScaling`** [bool]:  
-  If `true` and if `fixedSize` is `true`, then the size will be allowed to grow to accomodate for close camera proximity. The fixed size hence becomes a minimum screen size. Defaults to `false`.
+- **stackingOrderLinker [real]**: The z-value of the linker shape. As a child of the UI, it only competes with it and can be placed behind using -1. Defaults to -1.
 
-- **`depthTest`** [bool]:  
-  If `true` then the 2D items will order themselves as if they were in 3D space: if the camera is closer to a target than another, its UI will be displayed on top. Defaults to `false`.
+### Read-only Data
 
-- **`forceTopStacking`** [bool]:  
-  If `true` then the 2D items of this `SpatialItem` will be put on top of their siblings. This is useful to bind to `hovered` for example. If multiple silbings have this on `true`, then they will be displayed in the order in which they appear in the code. Defaults to `false`.
+- **hovered [bool]**: Indicates whether the overlay UI is currently being hovered by the mouse cursor.
 
-- **`hoverEnabled`** [bool]:  
-  Determines if the overlay UI can react to hover events. If `true`, the `entered()` and `exited()` signals will be emitted when the mouse enters or leaves the item. Defaults to `false`.
+- **linkerEnd [vector2d]**: Represents the endpoint of the linker line in screen space, connected to the center of the overlay UI.
 
-- **`mouseEnabled`** [bool]:  
-  If `true`, the overlay UI will respond to mouse events such as clicks, enabling the `clicked()` signal. Defaults to `false`.
+- **linkerStart [vector2d]**: Represents the starting point of the linker line in screen space, connected to the target model's projected position.
 
-- **`offsetLinkEnd`** [vector3d]:  
-  An offset applied to the position of the target model in 3D space. This is used to adjust the relative position of the overlay UI for better alignment with the 3D target. Defaults to `Qt.vector3d(0, 0, 0)`.
+- **scaleFactor [real]**: A scaling factor used to adjust the size of the overlay UI based on the distance between the camera and the target. This ensures that the overlay appears to have a fixed size in 3D space, despite changes in perspective. Use it to scale font sizes, stroke width, etc.
 
-- **`offsetLinkStart`** [vector3d]:  
-  An offset applied to the position of the target model in 3D space. This is used to adjust the relative position of start of the linker for better alignment with the 3D target. Defaults to `Qt.vector3d(0, 0, 0)`.
+### Signals and Aliases
 
-- **`showLinker`** [bool]:  
-  If `true`, a line will be drawn connecting the UI overlay to the target model to visually indicate the relationship. Defaults to `false`.
+Signals available:
+- `canceled()`
+- `clicked(MouseEvent mouse)`
+- `doubleClicked(MouseEvent mouse)`
+- `entered()`
+- `exited()`
+- `positionChanged(MouseEvent mouse)`
+- `pressAndHold(MouseEvent mouse)`
+- `pressed(MouseEvent mouse)`
+- `released(MouseEvent mouse)`
+- `wheel(WheelEvent wheel)`
 
-- **`stackingOrder`** [real]:  
-  The z value of the contents of the UI. It competes with all its other siblings only. Only active if `depthTest` is `false`. Defaults to `0`.
-
-- **`stackingOrderLinker`** [real]:  
-  The z value of the linker shape. Being a children of the UI, it only competes with it, and it can be placed behind by using `-1`. Defaults to `-1`.
-
-#### Read-only Data
-
-- **`hovered`** [bool]:  
-  Indicates whether the overlay UI is currently being hovered by the mouse cursor.
-
-- **`linkerEnd`** [vector2d]:  
-  Represents the endpoint of the linker line in screen space, which is connected to the center of the overlay UI.
-
-- **`linkerStart`** [vector2d]:  
-  Represents the starting point of the linker line in screen space, which is connected to the target model's projected position.
-
-- **`scaleFactor`** [real]:  
-  A scaling factor used to adjust the size of the overlay UI based on the distance between the camera and the target. This ensures that the overlay appears to have a fixed size in 3D space, despite changes in perspective: use it to scale font sizes, stroke width...
-
-#### Signals and aliases
-
-- Signals available: **`canceled`**, **`clicked(MouseEvent mouse)`**, **`doubleClicked(MouseEvent mouse)`**, **`entered`**, **`exited`**, **`positionChanged(MouseEvent mouse)`**, **`pressAndHold(MouseEvent mouse)`**, **`pressed(MouseEvent mouse)`**, **`released(MouseEvent mouse)`**, **`wheel(WheelEvent wheel)`**
-- The `MouseArea` whose signals are reshared by the `SpatialItem` can be accessed freely using the `mouseArea` property alias of `SpatialItem`
+The MouseArea whose signals are re-shared by the SpatialItem can be accessed freely using the `mouseArea` property alias of SpatialItem.
 
 ### Add to your project
 - Add the project as a submodule from your project root
@@ -120,10 +108,7 @@ add_subdirectory(libs/QMLSpatialUI)
 import SpatialUI
 ```
 
-### Example
-Take a look at [the complete example here](https://github.com/Kidev/QML-Spatial-UI/tree/main/example) \
-To run locally the example, edit `build.sh` and set `QT_ROOT` to your Qt installation architecture folder. Then run `make`
-
+### Simple example
 ```qml
 import QtQuick
 import QtQuick3D
@@ -152,25 +137,8 @@ Window {
 
         Node {
             id: originNode
-
-            eulerRotation: Qt.vector3d(0, 0, 0)
-
-            PropertyAnimation on eulerRotation.x {
-                duration: 1000
-                from: 0
-                loops: 1
-                to: -10
-            }
-            PropertyAnimation on eulerRotation.y {
-                duration: 1000
-                from: 0
-                loops: 1
-                to: -45
-            }
-
             PerspectiveCamera {
                 id: perspectiveCamera
-
                 fieldOfView: 45
                 position: Qt.vector3d(0, 0, 2000)
             }
@@ -194,25 +162,6 @@ Window {
                     diffuseColor: "red"
                 }
             ]
-        }
-
-        Human {
-            id: targetHuman
-
-            eulerRotation: Qt.vector3d(0, 0, 0)
-            pivot: Qt.vector3d(-20, 0, 0)
-            position: Qt.vector3d(100, -50, 0)
-            scale: Qt.vector3d(20, 20, 20)
-
-            RotationAnimation on eulerRotation.y {
-                direction: RotationAnimation.Counterclockwise
-                duration: 10000
-                from: 360
-                loops: Animation.Infinite
-                to: 0
-            }
-
-            Component.onCompleted: () => eulerRotation.y = 360
         }
 
         DirectionalLight {
@@ -249,11 +198,6 @@ Window {
                 }
             }
 
-            onClicked: event => console.log(`event=${event}`)
-            onEntered: () => console.log(`ENTER`)
-            onExited: () => console.log(`EXIT`)
-            onHoveredChanged: () => console.log(`hovered=${hovered}`)
-
             Rectangle {
                 anchors.fill: parent
                 border.color: spatialUI.hovered ? "white" : "black"
@@ -269,67 +213,13 @@ Window {
                 }
             }
         }
-
-        SpatialItem {
-            id: spatialNameTag
-
-            camera: perspectiveCamera
-            closeUpScaling: true
-            fixedSize: false
-            hoverEnabled: true
-            mouseEnabled: true
-            offsetLinkEnd: Qt.vector3d(0, 300, 50)
-            offsetLinkStart: Qt.vector3d(0, 125, 0)
-            showLinker: true
-            size: Qt.size(200, 50)
-            target: targetHuman
-
-            linker: ShapePath {
-                capStyle: ShapePath.FlatCap
-                joinStyle: ShapePath.BevelJoin
-                pathHints: ShapePath.PathConvex | ShapePath.PathLinear | ShapePath.PathNonIntersecting
-                startX: spatialNameTag.linkerStart.x
-                startY: spatialNameTag.linkerStart.y
-                strokeColor: spatialNameTag.hovered ? "black" : "white"
-                strokeWidth: 4 * spatialNameTag.scaleFactor
-
-                PathLine {
-                    x: spatialNameTag.linkerEnd.x
-                    y: spatialNameTag.linkerEnd.y
-                }
-
-                PathLine {
-                    x: spatialNameTag.linkerEnd.x + 20
-                    y: spatialNameTag.linkerEnd.y
-                }
-
-                PathLine {
-                    x: spatialNameTag.linkerStart.x
-                    y: spatialNameTag.linkerStart.y
-                }
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                border.color: spatialNameTag.hovered ? "black" : "white"
-                border.width: 2
-                color: "white"
-                radius: 25
-
-                Text {
-                    anchors.centerIn: parent
-                    color: "black"
-                    font.pixelSize: 15.0 * spatialNameTag.scaleFactor
-                    horizontalAlignment: Text.AlignHCenter
-                    text: "You spin me right round\nBaby, right round"
-                    verticalAlignment: Text.AlignVCenter
-                }
-            }
-        }
     }
 }
 ```
+### Advanced example
+For more advanced uses, tricks, and deploys, you can check [the complete code of the demo here](https://github.com/Kidev/QML-Spatial-UI/tree/main/example) \
+To run locally the demo, edit `build.sh` and set `QT_ROOT` to your Qt installation architecture folder. Then run `make`
 
-### Credits
+## Credits
 - [aaravanimates](https://free3d.com/user/aaravanimates) for the [human 3D model](https://free3d.com/3d-model/rigged-male-human-442626.html) of the example (Personal Use License)
 - [Roundicons](https://www.flaticon.com/authors/roundicons) for the [move icon](https://www.flaticon.com/free-icons/move) of the example (Flaticon License)

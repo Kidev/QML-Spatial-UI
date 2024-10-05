@@ -146,6 +146,7 @@ Item {
             anchors.fill: contentItem
             enabled: root.mouseEnabled
             hoverEnabled: root.hoverEnabled
+            propagateComposedEvents: true
             z: root.z + 1
 
             onCanceled: () => root.canceled()

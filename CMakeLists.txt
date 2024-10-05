@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(
-    projectSpatialUI
-    VERSION 1.0
-    LANGUAGES CXX
-)
+project(projectSpatialUI LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 20)
@@ -19,7 +15,6 @@ find_package(
                Quick
                Quick3D
                Qml
-               QuickControls2
 )
 
 qt_standard_project_setup()

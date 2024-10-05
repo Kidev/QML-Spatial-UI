@@ -11,7 +11,6 @@ target_link_libraries(
            Qt6::Gui
            Qt6::Quick
            Qt6::Quick3D
-           Qt6::Quick3DPrivate
            Qt6::Qml
 )
 target_include_directories(SpatialUILib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
