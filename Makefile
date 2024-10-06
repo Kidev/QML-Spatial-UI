@@ -1,15 +1,15 @@
-all:
+all: desktop
+
+desktop:
 	@bash build.sh
 
 web:
 	@bash build-web.sh
 
-run-web: web
-	@killall -9 emrun &>/dev/null
-	@emrun ./build/example/index.html
+run-web:
+	emsdk/upstream/emscripten/emrun ./build/example/index.html --kill_start --kill_exit
 
-run: all
-	killall -9 exampleExec &>/dev/null
+run:
 	./build/example/exampleExec
 
 clean:

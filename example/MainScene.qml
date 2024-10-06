@@ -183,7 +183,7 @@ Window {
             linker: ShapePath {
                 capStyle: ShapePath.RoundCap
                 joinStyle: ShapePath.BevelJoin
-                pathHints: ShapePath.PathLinear
+                //pathHints: ShapePath.PathLinear
                 startX: spatialUI.linkerStart.x
                 startY: spatialUI.linkerStart.y
                 strokeColor: spatialUI.hovered || spatialUI.dragging ? "black" : "white"
@@ -279,7 +279,7 @@ Window {
                 capStyle: ShapePath.FlatCap
                 fillColor: "white"
                 joinStyle: ShapePath.BevelJoin
-                pathHints: ShapePath.PathConvex | ShapePath.PathLinear | ShapePath.PathNonIntersecting
+                //pathHints: ShapePath.PathConvex | ShapePath.PathLinear | ShapePath.PathNonIntersecting
                 startX: spatialNameTag.linkerEnd.x
                 startY: spatialNameTag.linkerEnd.y - uiRectangle.border.width + (uiRectangle.height / 2) - 1
                 strokeColor: spatialNameTag.hovered ? "black" : "white"

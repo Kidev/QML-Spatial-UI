@@ -1,26 +1,21 @@
-name: Build and publish WASM demo
+name: Build and deploy WASM demo
 
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   build-and-deploy:
     name: "Build and deploy"
     env:
+      workspace_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI'
+      qt_version: '6.6.0'
+      emsdk_version: '3.1.37'
+      qt_modules: 'qtquick3d qtshadertools'
       qt_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt'
-      qt_root_wasm: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt/6.6.0/wasm_multithread'
-      qt_root_gcc: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt/6.6.0/gcc_64'
+      target_folder: 'qml-spatial-ui'
+      source_folder: '/home/kidev/work/QML-Spatial-UI/QML-Spatial-UI/build/example'
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -35,9 +30,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get -y install build-essential libgl1-mesa-dev curl python3 python3-venv
-          sudo apt-get -y qt6-webassembly-dev qt6-qmake
-          sudo apt-get -y install jq
-          sudo apt-get -y install qmlscene qml-module-qt-labs-platform
+          sudo apt-get -y install jq lftp
           sudo apt-get -y install libc++-dev
           sudo apt-get -y install libc++abi-dev
           sudo apt-get -y install libc6-dev
@@ -52,46 +45,47 @@ jobs:
       - name: Install ninja-build tool
         uses: seanmiddleditch/gha-setup-ninja@v5
 
-      - name: Install Qt gcc
+      - name: Install Qt gcc_64
         uses: jurplel/install-qt-action@v3
         with:
           aqtversion: '==3.1.*'
-          version: "6.6.0"
+          version: ${{ env.qt_version }}
           host: 'linux'
           target: 'desktop'
           set-env: 'false'
           arch: 'gcc_64'
-          dir: $qt_root
-          modules: 'qtquick3d qtshadertools'
+          dir: ${{ env.workspace_root }}
+          modules: ${{ env.qt_modules }}
           cache: 'true'
           cache-key-prefix: "install-qt-gcc"
 
-      - name: Install Qt wasm
+      - name: Install Qt wasm_multithread
         uses: jurplel/install-qt-action@v3
         with:
           aqtversion: '==3.1.*'
-          version: "6.6.0"
+          version: ${{ env.qt_version }}
           host: 'linux'
           target: 'desktop'
           set-env: 'true'
           arch: 'wasm_multithread'
-          install-deps: 'true'
-          setup-python: 'true'
-          extra: '--external 7z --autodesktop'
-          dir: $qt_root
-          modules: 'qtquick3d qtshadertools'
+          dir: ${{ env.workspace_root }}
+          modules: ${{ env.qt_modules }}
           cache: 'true'
           cache-key-prefix: "install-qt-wasm"
 
       - name: CMake Build
         shell: bash
         run: |
-          export QT_ROOT=$qt_root_wasm && export QT_HOST_PATH_ROOT=$qt_root_gcc && make web
+          echo "QT_VERSION=${{ env.qt_version }}" >> $GITHUB_ENV
+          echo "QT_ROOT=${{ env.qt_root }}" >> $GITHUB_ENV
+          echo "EMSDK_VERSION=${{ env.emsdk_version }}" >> $GITHUB_ENV
+          make web
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Upload to FTP
+        shell: bash
+        run: |
+          lftp -u "${{ secrets.FTP_UPLOAD_USER }}","${{ secrets.FTP_UPLOAD_PW }}" ${{ secrets.FTP_UPLOAD_IP }} <<EOF
+          mirror -R --only-newer --verbose ${{ env.source_folder }} ${{ env.target_folder }}
+          quit
+          EOF
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './build/example/'

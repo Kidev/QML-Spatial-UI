@@ -35,15 +35,15 @@ Item {
     readonly property int zOffset: 1000000000
 
     signal canceled
-    signal clicked(MouseEvent mouse)
-    signal doubleClicked(MouseEvent mouse)
+    signal clicked(var mouse)
+    signal doubleClicked(var mouse)
     signal entered
     signal exited
-    signal positionChanged(MouseEvent mouse)
-    signal pressAndHold(MouseEvent mouse)
-    signal pressed(MouseEvent mouse)
-    signal released(MouseEvent mouse)
-    signal wheel(WheelEvent wheel)
+    signal positionChanged(var mouse)
+    signal pressAndHold(var mouse)
+    signal pressed(var mouse)
+    signal released(var mouse)
+    signal wheel(var wheel)
 
     function updateDistanceFactor() {
         const distance = root.camera.scenePosition.minus(root.target.scenePosition).length();

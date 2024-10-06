@@ -21,4 +21,5 @@ qt_add_qml_module(
     URI SpatialUI
     QML_FILES ${SPATIALUI_QML}
     IMPORTS QtQuick3D
+    RESOURCE_PREFIX ""
 )
