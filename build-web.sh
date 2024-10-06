@@ -1,15 +1,15 @@
-export QT_ROOT="${QT_ROOT:-/opt/Qt/6.7.3/wasm_multithread}"
-export QT_HOST_PATH_ROOT="${QT_HOST_PATH_ROOT:-/opt/Qt/6.7.3/gcc_64}"
+export QT_ROOT="${QT_ROOT:-/opt/Qt/6.6.0/wasm_multithread}"
+export QT_HOST_PATH_ROOT="${QT_HOST_PATH_ROOT:-/opt/Qt/6.6.0/gcc_64}"
 
 export QT_HOST_CMAKE_DIR="${QT_HOST_PATH_ROOT}/lib/cmake"
 export QT_MODULE_PATH="${QT_ROOT}/lib/cmake/Qt6/"
 export QT_TOOLCHAIN="${QT_ROOT}/lib/cmake/Qt6/qt.toolchain.cmake"
 
 git clone https://github.com/emscripten-core/emsdk.git
-./emsdk/emsdk install 3.1.50
-./emsdk/emsdk activate 3.1.50
+./emsdk/emsdk install 3.1.37
+./emsdk/emsdk activate 3.1.37
 
-EMSDK_QUIET=1 source ./emsdk/emsdk_env.sh
+source ./emsdk/emsdk_env.sh
 
 mkdir -p build
 emcmake cmake -S . -B build -DQT_HOST_PATH=${QT_HOST_PATH_ROOT} -DQT_HOST_PATH_CMAKE_DIR=${QT_HOST_CMAKE_DIR} -DQt6_DIR=${QT_MODULE_PATH} -DCMAKE_TOOLCHAIN_FILE=${QT_TOOLCHAIN} -DCMAKE_PREFIX_PATH=${QT_ROOT} -DBUILD_EXAMPLE=ON -DEMSCRIPTEN=ON
