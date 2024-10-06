@@ -43,13 +43,13 @@ Window {
             eulerRotation: Qt.vector3d(0, 0, 0)
 
             PropertyAnimation on eulerRotation.x {
-                duration: 1000
+                duration: 100
                 from: 0
                 loops: 1
                 to: -10
             }
             PropertyAnimation on eulerRotation.y {
-                duration: 1000
+                duration: 100
                 from: 0
                 loops: 1
                 to: -45
