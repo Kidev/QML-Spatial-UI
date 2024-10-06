@@ -1,6 +1,6 @@
 set(EXAMPLE_SOURCES main.cpp)
 set(EXAMPLE_QML MainScene.qml Human.qml)
-set(EXAMPLE_RESOURCES meshes/human.mesh img/move.png img/favicon.ico)
+set(EXAMPLE_RESOURCES meshes/human.mesh img/move.png img/favicon.ico img/logo.png)
 
 qt_add_executable(exampleExec ${EXAMPLE_SOURCES})
 

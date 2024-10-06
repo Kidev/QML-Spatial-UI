@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(DEBUG "Set debug mode, disable QML compilation" OFF)
-option(BUILD_EXAMPLE "Build the example application" ON)
+option(BUILD_EXAMPLE "Build the example application" OFF)
 
 find_package(
     Qt6 REQUIRED

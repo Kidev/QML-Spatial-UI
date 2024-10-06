@@ -59,7 +59,7 @@ Window {
                 id: perspectiveCamera
 
                 clipFar: 1000000
-                fieldOfView: 60
+                fieldOfView: 40
                 position: Qt.vector3d(0, 0, 2000)
             }
         }
@@ -146,7 +146,7 @@ Window {
                     for (let i = 0; i < pickResults.length; i++) {
                         let pickResult = pickResults[i];
                         if (pickResult.objectHit.objectName === "raycastPlane") {
-                            spatialUI.altText = `${+(pickResult.scenePosition.x).toFixed(1)};${+(pickResult.scenePosition.y).toFixed(1)}`;
+                            spatialUI.altText = `${+(pickResult.scenePosition.x).toFixed(1)};${+(pickResult.scenePosition.z).toFixed(1)}`;
                             spatialUI.target.position = Qt.vector3d(pickResult.scenePosition.x, spatialUI.initialTargetPosition.y, pickResult.scenePosition.z);
                             break;
                         }
