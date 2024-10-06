@@ -15,4 +15,4 @@ run: all
 clean:
 	@rm -rf build CMakeLists.txt.user
 
-.PHONY: clean
+.PHONY: clean run run-web

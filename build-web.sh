@@ -1,8 +1,9 @@
-export QT_ROOT="/opt/Qt/6.7.3/wasm_multithread"
-export QT_HOST_PATH_ROOT="/opt/Qt/6.7.3/gcc_64"
+export QT_ROOT="${QT_ROOT:-/opt/Qt/6.7.3/wasm_multithread}"
+export QT_HOST_PATH_ROOT="${QT_HOST_PATH_ROOT:-/opt/Qt/6.7.3/gcc_64}"
+
 export QT_HOST_CMAKE_DIR="${QT_HOST_PATH_ROOT}/lib/cmake"
 export QT_MODULE_PATH="${QT_ROOT}/lib/cmake/Qt6/"
-export QT_TOOLCHAIN="/opt/Qt/6.7.3/wasm_multithread/lib/cmake/Qt6/qt.toolchain.cmake"
+export QT_TOOLCHAIN="${QT_ROOT}/lib/cmake/Qt6/qt.toolchain.cmake"
 
 git clone https://github.com/emscripten-core/emsdk.git
 ./emsdk/emsdk install 3.1.50
@@ -23,6 +24,3 @@ sed -i 's#<title>exampleExec</title>#<title>QML Spatial UI | Kidev<\/title><link
 sed -i "s#<strong>Qt for WebAssembly: exampleExec</strong>#<strong style='color:\#ffffff'>Kidev's QML Spatial UI powered by Qt6</strong>#g" build/example/index.html
 sed -i "s# height: 100% }# height: 100%; background-color:\#01010c;#g" build/example/index.html
 sed -i 's#<img src="qtlogo.svg" width="320" height="200"#<img src="logo.png" width="320" height="320"#g' build/example/index.html
-
-killall -9 emrun &>/dev/null
-emrun ./build/example/index.html

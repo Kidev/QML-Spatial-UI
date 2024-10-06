@@ -1,0 +1,76 @@
+name: Build and publish WASM demo
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    name: "Build and deploy"
+    env:
+      qt_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt'
+      qt_root_wasm: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt/6.6.0/wasm_multithread'
+      qt_root_gcc: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt/6.6.0/gcc_64'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: 'recursive'
+          lfs: 'true'
+
+      - name: Update CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Install Qt gcc
+        uses: jurplel/install-qt-action@v3
+        with:
+          aqtversion: '==3.1.*'
+          version: "6.6.0"
+          host: 'linux'
+          target: 'desktop'
+          set-env: 'false'
+          arch: 'gcc_64'
+          dir: $qt_root
+          modules: 'qtquick3d qtshadertools'
+          tools: 'tools_cmake tools_ninja tools_opensslv3_src'
+          cache: 'true'
+          cache-key-prefix: "install-qt-gcc"
+
+      - name: Install Qt wasm
+        uses: jurplel/install-qt-action@v3
+        with:
+          aqtversion: '==3.1.*'
+          version: "6.6.0"
+          host: 'linux'
+          target: 'desktop'
+          set-env: 'false'
+          arch: 'wasm_multithread'
+          dir: $qt_root
+          modules: 'qtquick3d qtshadertools'
+          cache: 'true'
+          cache-key-prefix: "install-qt-wasm"
+
+      - name: CMake Build
+        shell: bash
+        run: |
+          export QT_ROOT=$qt_root_wasm && export QT_HOST_PATH_ROOT=$qt_root_gcc && make web
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './build/example/'
