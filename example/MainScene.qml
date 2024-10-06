@@ -132,17 +132,16 @@ Window {
             id: spatialUI
 
             property string altText: ""
-            property vector2d clickPos
             property bool dragging: false
             property vector3d initialTargetPosition
+            property vector2d startPos
 
             function drag(x: real, y: real) {
                 if (spatialUI.dragging) {
                     totalMouseArea.cursorShape = Qt.DragMoveCursor;
                     const currentPos = Qt.vector2d(x, y);
-                    const deltaMouse = currentPos.minus(spatialUI.clickPos);
-                    const adjustedMousePosition = currentPos.plus(spatialUI.clickPos.minus(spatialUI.linkerEnd));
-                    spatialUI.clickPos = adjustedMousePosition;
+                    const adjustedMousePosition = currentPos.plus(spatialUI.startPos.minus(spatialUI.linkerEnd));
+                    spatialUI.startPos = adjustedMousePosition;
                     const pickResults = view3D.pickAll(adjustedMousePosition.x, adjustedMousePosition.y);
                     for (let i = 0; i < pickResults.length; i++) {
                         let pickResult = pickResults[i];
@@ -162,7 +161,7 @@ Window {
             }
 
             function startDrag(x: real, y: real) {
-                spatialUI.clickPos = Qt.vector2d(x, y);
+                spatialUI.startPos = Qt.vector2d(x, y);
                 spatialUI.initialTargetPosition = spatialUI.target.position;
                 spatialUI.dragging = true;
                 totalMouseArea.cursorShape = Qt.OpenHandCursor;
