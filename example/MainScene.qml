@@ -58,8 +58,8 @@ Window {
             PerspectiveCamera {
                 id: perspectiveCamera
 
-                clipFar: 1000000
-                fieldOfView: 40
+                clipFar: 100000
+                fieldOfView: 45
                 position: Qt.vector3d(0, 0, 2000)
             }
         }

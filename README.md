@@ -3,7 +3,7 @@ QML Spatial UI is a library designed for creating interactive and dynamic 2D ove
 
 ## Demo
 
- [A demo of SpatialItem in your browser is available here](#). \
+ [A demo of SpatialItem in your browser is available here](https://kidev.github.io/QML-Spatial-UI/). \
  This demo showcases the interaction between 2D overlays and 3D objects, demonstrating how the UI elements dynamically adjust to camera movements. Moreover, it highlights the possibilities of the tool by implementing a 3D move tool: just press and hold left mouse button on the "SpatialUI" text!
 
 ## Features
@@ -31,18 +31,78 @@ QML Spatial UI is a library designed for creating interactive and dynamic 2D ove
 - **target (_required_) [Node]**: The 3D model to which the overlay UI is linked. The position of this model determines the screen position for displaying the overlay.
 
 - **linker [ShapePath]**: Defines the visual appearance of the linker line between the overlay and the target model. This property can be customized to modify attributes like color, width, and style of the linker. There is no default, so here is a simple line joining the target to the UI:
+
+<details>
+    <summary>Linker examples with their UI</summary>
+
+- A simple line
 ```QML
 ShapePath {
-    startX: spatialUI.linkerStart.x
-    startY: spatialUI.linkerStart.y
+    startX: linkerStart.x
+    startY: linkerStart.y
     strokeColor: "black"
-    strokeWidth: 4 * spatialUI.scaleFactor
+    strokeWidth: 4 * scaleFactor
     PathLine {
-        x: spatialUI.linkerEnd.x
-        y: spatialUI.linkerEnd.y
+        x: linkerEnd.x
+        y: linkerEnd.y
+    }
+}
+
+Rectangle {
+    anchors.fill: parent
+    color: "white"
+    radius: 10
+
+    Text {
+        anchors.centerIn: parent
+        color: "black"
+        font.pixelSize: 16 * scaleFactor
+        text: "SpatialUI"
     }
 }
 ```
+- In the style of a speech bubble
+```QML
+ShapePath {
+    capStyle: ShapePath.FlatCap
+    fillColor: "white"
+    joinStyle: ShapePath.BevelJoin
+    startX: linkerEnd.x
+    startY: linkerEnd.y - uiRectangle.border.width + (uiRectangle.height / 2) - 1
+    strokeColor: hovered ? "black" : "white"
+    strokeWidth: 1 * scaleFactor
+
+    PathLine {
+        x: linkerStart.x
+        y: linkerStart.y
+    }
+
+    PathLine {
+        x: linkerEnd.x + 20 * scaleFactor
+        y: linkerEnd.y - uiRectangle.border.width + (uiRectangle.height / 2) - 1
+    }
+}
+
+Rectangle {
+    id: uiRectangle
+
+    anchors.fill: parent
+    border.color: hovered ? "black" : "white"
+    border.width: 2
+    color: "white"
+    radius: 25
+
+    Text {
+        anchors.centerIn: parent
+        color: "black"
+        font.pixelSize: 15.0 * scaleFactor
+        horizontalAlignment: Text.AlignHCenter
+        text: "Hello!"
+        verticalAlignment: Text.AlignVCenter
+    }
+}
+```
+</details>
 
 - **fixedSize [bool]**: If true, the overlay UI will maintain a constant size on the screen regardless of distance to the camera. Defaults to false.
 
