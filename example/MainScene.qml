@@ -69,7 +69,7 @@ Window {
 
             anchors.fill: parent
             camera: perspectiveCamera
-            enabled: !spatialUI.dragging
+            mouseEnabled: !spatialUI.dragging
             origin: originNode
             panEnabled: true
         }
