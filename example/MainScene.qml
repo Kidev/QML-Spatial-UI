@@ -58,7 +58,8 @@ Window {
             PerspectiveCamera {
                 id: perspectiveCamera
 
-                fieldOfView: 45
+                clipFar: 1000000
+                fieldOfView: 60
                 position: Qt.vector3d(0, 0, 2000)
             }
         }
@@ -130,13 +131,15 @@ Window {
             id: spatialUI
 
             property string altText: ""
-            property vector2d clickOffset: Qt.vector2d(0, 0)
+            property vector2d clickPos
             property bool dragging: false
-            readonly property vector2d linkerOffset: spatialUI.linkerEnd.minus(spatialUI.linkerStart)
 
-            function drag(mouse) {
+            function drag(x: real, y: real) {
                 if (spatialUI.dragging) {
-                    const shiftedMouse = Qt.vector2d(mouse.x, mouse.y).minus(spatialUI.linkerOffset).plus(spatialUI.clickOffset);
+                    totalMouseArea.cursorShape = Qt.DragMoveCursor;
+                    const currentPos = Qt.vector2d(x, y);
+                    const shiftedMouse = spatialUI.targetOnScreen.plus(currentPos.minus(spatialUI.clickPos));
+                    spatialUI.clickPos = currentPos;
                     const pickResults = view3D.pickAll(shiftedMouse.x, shiftedMouse.y);
                     for (let i = 0; i < pickResults.length; i++) {
                         let pickResult = pickResults[i];
@@ -150,13 +153,15 @@ Window {
             }
 
             function endDrag() {
-                dragging = false;
+                spatialUI.dragging = false;
                 spatialUI.altText = "";
+                totalMouseArea.cursorShape = Qt.ArrowCursor;
             }
 
-            function startDrag(mouse) {
-                spatialUI.clickOffset = spatialUI.linkerEnd.minus(Qt.vector2d(mouse.x, mouse.y));
-                dragging = true;
+            function startDrag(x: real, y: real) {
+                spatialUI.clickPos = Qt.vector2d(x, y);
+                spatialUI.dragging = true;
+                totalMouseArea.cursorShape = Qt.OpenHandCursor;
             }
 
             camera: perspectiveCamera
@@ -187,9 +192,11 @@ Window {
                 }
             }
 
-            onPositionChanged: mouse => drag(mouse)
-            onPressed: mouse => startDrag(mouse)
-            onReleased: mouse => endDrag()
+            //onExited: () => spatialUI.endDrag()
+            onPositionChanged: mouse => spatialUI.drag(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y)
+            onPressed: mouse => spatialUI.startDrag(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y)
+
+            //onReleased: () => spatialUI.endDrag()
 
             Rectangle {
                 anchors.fill: parent
@@ -279,6 +286,8 @@ Window {
             }
 
             onClicked: () => spatialNameTag.textClicked = !spatialNameTag.textClicked
+            onEntered: () => spatialNameTag.mouseArea.cursorShape = Qt.PointingHandCursor
+            onExited: () => spatialNameTag.mouseArea.cursorShape = Qt.ArrowCursor
 
             Rectangle {
                 id: uiRectangle
@@ -301,6 +310,8 @@ Window {
         }
 
         MouseArea {
+            id: totalMouseArea
+
             anchors.fill: parent
             enabled: true
             hoverEnabled: true
@@ -308,18 +319,15 @@ Window {
 
             onPositionChanged: mouse => {
                 if (spatialUI.dragging) {
-                    spatialUI.drag(mouse);
+                    spatialUI.drag(mouse.X, mouse.Y);
                     mouse.accepted = true;
-                } else {
-                    mouse.accepted = false;
                 }
             }
-            onReleased: mouse => {
-                if (spatialUI.dragging) {
-                    spatialUI.endDrag();
-                }
-                mouse.accepted = false;
-            }
+            //onReleased: mouse => {
+            //    if (spatialUI.dragging) {
+            //        spatialUI.endDrag();
+            //   }
+            //}
         }
     }
 }

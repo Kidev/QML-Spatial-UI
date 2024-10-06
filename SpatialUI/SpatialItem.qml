@@ -7,6 +7,7 @@ Item {
 
     required property PerspectiveCamera camera
     property bool closeUpScaling: false
+    readonly property alias contentItem: contentItem
     default property alias data: contentItem.data
     property bool depthTest: false
     property real distanceFactor: 1.0
