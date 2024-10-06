@@ -138,7 +138,7 @@ Window {
 
             function drag(x: real, y: real) {
                 if (spatialUI.dragging) {
-                    totalMouseArea.cursorShape = Qt.DragMoveCursor;
+                    spatialUI.mouseArea.cursorShape = Qt.DragMoveCursor;
                     const currentPos = Qt.vector2d(x, y);
                     const adjustedMousePosition = currentPos.plus(spatialUI.startPos.minus(spatialUI.linkerEnd));
                     spatialUI.startPos = adjustedMousePosition;
@@ -157,14 +157,14 @@ Window {
             function endDrag() {
                 spatialUI.dragging = false;
                 spatialUI.altText = "";
-                totalMouseArea.cursorShape = Qt.ArrowCursor;
+                spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
             }
 
             function startDrag(x: real, y: real) {
                 spatialUI.startPos = Qt.vector2d(x, y);
                 spatialUI.initialTargetPosition = spatialUI.target.position;
                 spatialUI.dragging = true;
-                totalMouseArea.cursorShape = Qt.OpenHandCursor;
+                spatialUI.mouseArea.cursorShape = Qt.OpenHandCursor;
             }
 
             camera: perspectiveCamera
@@ -195,6 +195,16 @@ Window {
                 }
             }
 
+            onEntered: () => {
+                if (!spatialUI.dragging) {
+                    spatialUI.mouseArea.cursorShape = Qt.OpenHandCursor;
+                }
+            }
+            onExited: () => {
+                if (!spatialUI.dragging) {
+                    spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
+                }
+            }
             onPositionChanged: mouse => spatialUI.drag(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y)
             onPressed: mouse => spatialUI.startDrag(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y)
             onReleased: () => spatialUI.endDrag()
@@ -221,7 +231,7 @@ Window {
                     color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
                     enabled: !spatialUI.dragging
                     font.pixelSize: 8 * spatialUI.scaleFactor
-                    text: !spatialUI.dragging ? "Hold to move" : ""
+                    text: !spatialUI.dragging ? "Click and hold to move" : ""
                     visible: !spatialUI.dragging
                 }
 
