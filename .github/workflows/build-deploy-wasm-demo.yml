@@ -12,10 +12,10 @@ jobs:
       workspace_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI'
       qt_version: '6.6.0'
       emsdk_version: '3.1.37'
-      qt_modules: 'qtquick3d qtshadertools'
+      qt_modules: 'qtquick3d qtquicktimeline qtshadertools'
       qt_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt'
-      target_folder: 'qml-spatial-ui'
-      source_folder: '/home/kidev/work/QML-Spatial-UI/QML-Spatial-UI/build/example'
+      target_folder: 'QML-Spatial-UI'
+      source_folder: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/build/example'
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -82,6 +82,7 @@ jobs:
         shell: bash
         run: |
           lftp -u "${{ secrets.FTP_UPLOAD_USER }}","${{ secrets.FTP_UPLOAD_PW }}" ${{ secrets.FTP_UPLOAD_IP }} <<EOF
+          set ssl:verify-certificate no
           mirror -R --only-newer --verbose ${{ env.source_folder }} ${{ env.target_folder }}
           quit
           EOF
