@@ -274,13 +274,15 @@ Window {
     }
 }
 ```
-### Advanced use and running the example
-- For more advanced uses, tricks, and deploys, you can check [the complete code of the demo here](https://github.com/Kidev/QML-Spatial-UI/tree/main/example) \
-- To build the demo for desktop:
+
+For more advanced uses, tricks, and deploys, you can check [the code of the demo here](https://github.com/Kidev/QML-Spatial-UI/tree/main/example)
+
+### Building the demo
+- For desktop:
   - Install Qt for `gcc_64`.  
   - Set `QT_ROOT` and `QT_VERSION` to the appropriate values for your Qt installation, then run `make`: \
     `export QT_VERSION="6.6.0" && QT_ROOT="/opt/Qt" && make`  
-- To build the demo for the web:
+- For the web:
   - Install Qt for `gcc_64` AND `wasm_multithread`.  
   - Enable the following headers on your server:  
     ```
@@ -289,7 +291,7 @@ Window {
     ```
   - Set `QT_ROOT`, `QT_VERSION` and [`EMSDK_VERSION`](https://doc.qt.io/qt-6/wasm.html) to the appropriate values for your Qt installation, then run `make web`: \
     `export QT_VERSION="6.6.0" && QT_ROOT="/opt/Qt" && EMSDK_VERSION="3.1.37" && make web`
-  - You can use `make run` / `make run-web` to run the desktop version / to run the web version in your favorite browser.
+- You can use `make run` / `make run-web` to run the desktop version / to run the web version in your favorite browser.
 
 
 ## Credits
