@@ -139,14 +139,16 @@ Window {
             function drag(x: real, y: real) {
                 if (spatialUI.dragging) {
                     spatialUI.mouseArea.cursorShape = Qt.DragMoveCursor;
+
                     const currentPos = Qt.vector2d(x, y);
                     const adjustedMousePosition = currentPos.plus(spatialUI.startPos.minus(spatialUI.linkerEnd));
-                    spatialUI.startPos = adjustedMousePosition;
+
                     const pickResults = view3D.pickAll(adjustedMousePosition.x, adjustedMousePosition.y);
                     for (let i = 0; i < pickResults.length; i++) {
                         let pickResult = pickResults[i];
                         if (pickResult.objectHit.objectName === "raycastPlane") {
-                            spatialUI.altText = `${+(pickResult.scenePosition.x).toFixed(1)};${+(pickResult.scenePosition.z).toFixed(1)}`;
+                            spatialUI.startPos = adjustedMousePosition;
+                            spatialUI.altText = `${+(pickResult.scenePosition.x).toFixed(1)}`.padStart(7) + ' ; ' + `${+(pickResult.scenePosition.z).toFixed(1)}`.padEnd(7);
                             spatialUI.target.position = Qt.vector3d(pickResult.scenePosition.x, spatialUI.initialTargetPosition.y, pickResult.scenePosition.z);
                             break;
                         }
@@ -157,14 +159,19 @@ Window {
             function endDrag() {
                 spatialUI.dragging = false;
                 spatialUI.altText = "";
-                spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
+                if (spatialUI.mouseArea.containsMouse) {
+                    spatialUI.mouseArea.cursorShape = Qt.OpenHandCursor;
+                } else {
+                    spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
+                }
             }
 
             function startDrag(x: real, y: real) {
                 spatialUI.startPos = Qt.vector2d(x, y);
                 spatialUI.initialTargetPosition = spatialUI.target.position;
                 spatialUI.dragging = true;
-                spatialUI.mouseArea.cursorShape = Qt.OpenHandCursor;
+                spatialUI.mouseArea.cursorShape = Qt.ClosedHandCursor;
+                spatialUI.drag(x, y);
             }
 
             camera: perspectiveCamera

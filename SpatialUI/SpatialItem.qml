@@ -130,7 +130,7 @@ Item {
             root.updateSceneProjection();
         }
 
-        target: Window.window
+        target: Window
     }
 
     Item {
