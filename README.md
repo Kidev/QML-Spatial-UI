@@ -280,8 +280,8 @@ For more advanced uses, tricks, and deploys, you can check [the code of the demo
 ### Building the demo
 - For desktop:
   - Install Qt for `gcc_64`.  
-  - Set `QT_ROOT` and `QT_VERSION` to the appropriate values for your Qt installation, then run `make`: \
-    `export QT_VERSION="6.6.0" && QT_ROOT="/opt/Qt" && make`  
+  - Set `QT_ROOT` and `QT_VERSION` to the appropriate values for your Qt installation and run: \
+    `make desktop QT_ROOT="/opt/Qt" QT_VERSION="6.7.3"`  
 - For the web:
   - Install Qt for `gcc_64` AND `wasm_multithread`.  
   - Enable the following headers on your server:  
@@ -289,8 +289,8 @@ For more advanced uses, tricks, and deploys, you can check [the code of the demo
     Cross-Origin-Opener-Policy: same-origin
     Cross-Origin-Embedder-Policy: require-corp
     ```
-  - Set `QT_ROOT`, `QT_VERSION` and [`EMSDK_VERSION`](https://doc.qt.io/qt-6/wasm.html) to the appropriate values for your Qt installation, then run `make web`: \
-    `export QT_VERSION="6.6.0" && QT_ROOT="/opt/Qt" && EMSDK_VERSION="3.1.37" && make web`
+  - Set `QT_ROOT`, `QT_VERSION` and [`EMSDK_VERSION`](https://doc.qt.io/qt-6/wasm.html) to the appropriate values for your Qt installation and run: \
+    `make web QT_ROOT="/opt/Qt" QT_VERSION="6.6.0" EMSDK_VERSION="3.1.37"`
 - You can use `make run` / `make run-web` to run the desktop version / to run the web version in your favorite browser.
 
 

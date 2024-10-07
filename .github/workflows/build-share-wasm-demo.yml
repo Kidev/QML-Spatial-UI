@@ -76,10 +76,7 @@ jobs:
       - name: CMake Build
         shell: bash
         run: |
-          echo "QT_VERSION=${{ env.qt_version }}" >> $GITHUB_ENV
-          echo "QT_ROOT=${{ env.qt_root }}" >> $GITHUB_ENV
-          echo "EMSDK_VERSION=${{ env.emsdk_version }}" >> $GITHUB_ENV
-          make web
+          make web QT_ROOT=${{ env.qt_root }} QT_VERSION=${{ env.qt_version }} EMSDK_VERSION=${{ env.emsdk_version }}
 
       - name: Upload to FTP
         shell: bash
