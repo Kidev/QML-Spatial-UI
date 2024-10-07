@@ -134,6 +134,18 @@ Item {
         target: root.Window.window
     }
 
+    Connections {
+        function onHeightChanged() {
+            root.updateSceneProjection();
+        }
+
+        function onWidthChanged() {
+            root.updateSceneProjection();
+        }
+
+        target: Window.window
+    }
+
     Item {
         id: contentItem
 
