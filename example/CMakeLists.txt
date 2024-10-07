@@ -9,6 +9,8 @@ set(
     img/github.png
 )
 
+set(CMAKE_BUILD_TYPE MinSizeRel)
+
 qt_add_executable(exampleExec ${EXAMPLE_SOURCES})
 
 if (DEBUG)
@@ -30,7 +32,18 @@ else ()
     )
 endif ()
 
-target_compile_options(exampleExec PUBLIC -Wall -Werror -Wpedantic)
+target_compile_options(
+    exampleExec
+    PUBLIC -Wall
+           -Werror
+           -Wpedantic
+           -Os
+           -DNDEBUG
+)
+
+if (EMSCRIPTEN)
+    target_compile_options(exampleExec PUBLIC -Os -DNDEBUG)
+endif ()
 
 set_target_properties(
     exampleExec

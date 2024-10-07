@@ -24,7 +24,7 @@ Item {
 
     signal canceled(eventPoint point)
     signal grabChanged(int transition, eventPoint point)
-    signal mouseMoved(vector2d position, vector2d last)
+    signal mouseMovedDragging(vector2d position, vector2d last)
     signal mousePressed(vector2d position)
     signal mouseReleased(vector2d position)
     signal panEnded
@@ -38,7 +38,7 @@ Item {
 
     function _mouseMoved(newPos: vector2d) {
         status.currentPos = newPos;
-        root.mouseMoved(newPos, status.lastPos);
+        root.mouseMovedDragging(newPos, status.lastPos);
     }
 
     function _mousePressed(newPos) {

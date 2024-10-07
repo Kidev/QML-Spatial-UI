@@ -23,7 +23,9 @@ Node {
         Model {
             id: body
 
+            castsShadows: true
             materials: [principledMaterial]
+            receivesShadows: true
             source: "meshes/human.mesh"
         }
     }

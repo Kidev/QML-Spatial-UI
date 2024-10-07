@@ -18,13 +18,60 @@ Window {
         anchors.fill: parent
         camera: perspectiveCamera
 
-        environment: SceneEnvironment {
+        /*environment: SceneEnvironment {
             backgroundMode: SceneEnvironment.SkyBox
 
             lightProbe: Texture {
                 textureData: ProceduralSkyTextureData {
                 }
             }
+
+            backgroundMode: SceneEnvironment.Color
+            clearColor: theFog.color
+            fog: theFog
+        }*/
+
+        environment: SceneEnvironment {
+
+            //antialiasingMode: SceneEnvironment.SSAA
+            antialiasingMode: SceneEnvironment.MSAA
+            antialiasingQuality: SceneEnvironment.High
+            //backgroundMode: SceneEnvironment.
+            backgroundMode: SceneEnvironment.Color
+            clearColor: theFog.color
+            fog: theFog
+
+            //lightProbe: Texture {
+            //    source: "/res/img/skybox/skybox.ktx"
+            //}
+            //lightProbe: Texture {
+            //    textureData: ProceduralSkyTextureData {}
+            //}
+        }
+
+        PointLight {
+            id: modelDynamicLight
+
+            brightness: 1
+            castsShadow: true
+            constantFade: 0
+            quadraticFade: 0.01
+            shadowFactor: 50
+            shadowMapQuality: Light.ShadowMapQualityHigh
+            x: -200
+            y: 1000
+            z: 200
+        }
+
+        Fog {
+            id: theFog
+
+            color: "black"
+            density: 0.99
+            depthEnabled: true
+            depthFar: 10000
+            depthNear: 5000
+            enabled: true
         }
 
         AxisHelper {
@@ -74,12 +121,23 @@ Window {
             mouseEnabled: !spatialUI.dragging
             origin: originNode
             panEnabled: true
+
+            // onCanceled: point => console.log(`onCanceled(${point})`)
+            // onGrabChanged: (transition, point) => console.log(`onGrabChanged(${transition})(${point})`)
+            // onMouseMovedDragging: (position, last) => console.log(`onMouseMovedDragging(${position})(${last})`)
+            // onMousePressed: position => console.log(`onMousePressed(${position})`)
+            // onMouseReleased: position => console.log(`onMouseReleased(${position})`)
+            // onPanEnded: () => console.log(`onPanEnded()`)
+            // onPanStarted: position => console.log(`onPanStarted(${position})`)
+            // onPanUpdated: position => console.log(`onPanUpdated(${position})`)
         }
 
         Model {
             id: targetModel
 
+            castsShadows: true
             position: Qt.vector3d(0, 50, 0)
+            receivesShadows: true
             source: "#Cube"
 
             materials: [
@@ -92,10 +150,12 @@ Window {
         Model {
             id: raycastPlane
 
+            castsShadows: true
             eulerRotation.x: -90
             objectName: "raycastPlane"
             pickable: true
             position: Qt.vector3d(0, -1, 0)
+            receivesShadows: true
             scale: Qt.vector3d(1000, 1000, 1)
             source: "#Rectangle"
 
@@ -125,10 +185,10 @@ Window {
             Component.onCompleted: () => eulerRotation.y = 360
         }
 
-        DirectionalLight {
+        /*DirectionalLight {
             eulerRotation.x: -30
             eulerRotation.y: -70
-        }
+        }*/
 
         SpatialItem {
             id: spatialUI
@@ -217,6 +277,7 @@ Window {
                 const pos = Qt.vector2d(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y);
                 spatialUI.offsetFactors = (Qt.vector2d(mouse.x, mouse.y).minus(Qt.vector2d(spatialUI.sizeScaled.x / 2, spatialUI.sizeScaled.y / 2))).times(Qt.vector2d(1 / spatialUI.sizeScaled.x, 1 / spatialUI.sizeScaled.y));
                 spatialUI.startDrag(pos);
+                //orbitCameraController.dragHandlerMove.target = spatialUI;
             }
             onReleased: () => spatialUI.endDrag()
 
