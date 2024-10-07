@@ -25,6 +25,7 @@ Item {
     readonly property real scaleFactor: root.distanceFactor
     property bool showLinker: false
     required property size size
+    readonly property vector2d sizeScaled: Qt.vector2d(root.size.width, root.size.height).times(root.scaleFactor)
     property int stackingOrder: 0
     property int stackingOrderLinker: -1
     required property Node target
@@ -130,7 +131,7 @@ Item {
             root.updateSceneProjection();
         }
 
-        target: Window
+        target: root.Window.window
     }
 
     Item {
