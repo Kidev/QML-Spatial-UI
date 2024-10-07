@@ -69,7 +69,7 @@ Window {
 
             anchors.fill: parent
             camera: perspectiveCamera
-            mouseEnabled: !spatialUI.dragging
+            mouseEnabled: !ui.dragging
             origin: originNode
             panEnabled: true
         }
@@ -129,26 +129,37 @@ Window {
         }
 
         SpatialItem {
-            id: spatialUI
+            id: ui
 
             property string altText: ""
             property bool dragging: false
+            //property vector2d lastPos
+            //property vector2d offsetFactors
+            property vector2d firstClickPos
             property vector3d initialTargetPosition
-            property vector2d lastPos
-            property vector2d offsetFactors
 
-            function drag(x: real, y: real) {
-                if (spatialUI.dragging) {
-                    spatialUI.mouseArea.cursorShape = Qt.DragMoveCursor;
-                    const currentPos = Qt.vector2d(x, y);
-                    const adjustedMousePosition = currentPos.plus(spatialUI.lastPos.minus(spatialUI.linkerEnd)).minus(spatialUI.sizeScaled.times(spatialUI.offsetFactors));
-                    const pickResults = view3D.pickAll(adjustedMousePosition.x, adjustedMousePosition.y);
-                    for (var i = 0; i < pickResults.length; i++) {
-                        let pickResult = pickResults[i];
+            function beginDrag(x, y) {
+                ui.mouseArea.cursorShape = Qt.ClosedHandCursor;
+                ui.initialTargetPosition = ui.target.position;
+                ui.firstClickPos = Qt.vector2d(x, y);
+                ui.dragging = true;
+            }
+
+            function drag(x, y) {
+                if (dragging) {
+                    const centerUI = ui.linkerEnd;
+                    const clickPos = Qt.vector2d(x, y);
+                    const toCenter = centerUI.minus(ui.firstClickPos);
+                    const toBottomLeft = Qt.vector2d(-size.width / 2, size.height / 2).times(ui.scaleFactor);
+                    const bottomLeft = clickPos.plus(toCenter).plus(toBottomLeft);
+                    const bottomLeftToTargetPos = ui.targetOnScreen.minus(ui.targetLinkEndOffset);
+                    const targetPosCorrected = bottomLeft.plus(bottomLeftToTargetPos);
+                    const pickResults = view3D.pickAll(targetPosCorrected.x, targetPosCorrected.y);
+                    for (let i = 0; i < pickResults.length; i++) {
+                        const pickResult = pickResults[i];
                         if (pickResult.objectHit.objectName === "raycastPlane") {
-                            spatialUI.lastPos = adjustedMousePosition;
-                            spatialUI.altText = `${+(pickResult.scenePosition.x).toFixed(1)}`.padStart(7) + ' ; ' + `${+(pickResult.scenePosition.z).toFixed(1)}`.padEnd(7);
-                            spatialUI.target.position = Qt.vector3d(pickResult.scenePosition.x, spatialUI.initialTargetPosition.y, pickResult.scenePosition.z);
+                            ui.altText = `${+(pickResult.scenePosition.x).toFixed(1)}`.padStart(7) + ' ; ' + `${+(pickResult.scenePosition.z).toFixed(1)}`.padEnd(7);
+                            ui.target.position = Qt.vector3d(pickResult.scenePosition.x, ui.initialTargetPosition.y, pickResult.scenePosition.z);
                             break;
                         }
                     }
@@ -156,28 +167,56 @@ Window {
             }
 
             function endDrag() {
-                spatialUI.dragging = false;
-                spatialUI.altText = "";
-                if (spatialUI.mouseArea.containsMouse) {
-                    spatialUI.mouseArea.cursorShape = Qt.OpenHandCursor;
+                ui.dragging = false;
+                ui.altText = "";
+                if (ui.mouseArea.containsMouse) {
+                    ui.mouseArea.cursorShape = Qt.OpenHandCursor;
                 } else {
-                    spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
+                    ui.mouseArea.cursorShape = Qt.ArrowCursor;
+                }
+            }
+
+            /*            function drag(x: real, y: real) {
+                if (ui.dragging) {
+                    ui.mouseArea.cursorShape = Qt.DragMoveCursor;
+                    const currentPos = Qt.vector2d(x, y);
+                    const adjustedMousePosition = currentPos.plus(ui.lastPos.minus(ui.linkerEnd)).minus(ui.sizeScaled.times(ui.offsetFactors));
+                    const pickResults = view3D.pickAll(adjustedMousePosition.x, adjustedMousePosition.y);
+                    for (var i = 0; i < pickResults.length; i++) {
+                        let pickResult = pickResults[i];
+                        if (pickResult.objectHit.objectName === "raycastPlane") {
+                            ui.lastPos = adjustedMousePosition;
+                            ui.altText = `${+(pickResult.scenePosition.x).toFixed(1)}`.padStart(7) + ' ; ' + `${+(pickResult.scenePosition.z).toFixed(1)}`.padEnd(7);
+                            ui.target.position = Qt.vector3d(pickResult.scenePosition.x, ui.initialTargetPosition.y, pickResult.scenePosition.z);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            function endDrag() {
+                ui.dragging = false;
+                ui.altText = "";
+                if (ui.mouseArea.containsMouse) {
+                    ui.mouseArea.cursorShape = Qt.OpenHandCursor;
+                } else {
+                    ui.mouseArea.cursorShape = Qt.ArrowCursor;
                 }
             }
 
             function startDrag(pos: vector2d) {
-                spatialUI.lastPos = pos.minus(spatialUI.linkerEnd.minus(spatialUI.linkerStart)).minus(spatialUI.sizeScaled.times(spatialUI.offsetFactors));
-                spatialUI.initialTargetPosition = spatialUI.target.position;
-                spatialUI.dragging = true;
-                spatialUI.mouseArea.cursorShape = Qt.ClosedHandCursor;
-                spatialUI.drag(pos.x, pos.y);
-            }
+                ui.lastPos = pos.minus(ui.linkerEnd.minus(ui.linkerStart)).minus(ui.sizeScaled.times(ui.offsetFactors));
+                ui.initialTargetPosition = ui.target.position;
+                ui.dragging = true;
+                ui.mouseArea.cursorShape = Qt.ClosedHandCursor;
+                ui.drag(pos.x, pos.y);
+            }*/
 
             camera: perspectiveCamera
             closeUpScaling: true
             depthTest: true
-            fixedSize: spatialUI.hovered || spatialUI.dragging
-            forceTopStacking: spatialUI.hovered || spatialUI.dragging
+            fixedSize: ui.hovered || ui.dragging
+            forceTopStacking: ui.hovered || ui.dragging
             hoverEnabled: true
             mouseEnabled: true
             offsetLinkEnd: Qt.vector3d(0, 250, 50)
@@ -189,79 +228,80 @@ Window {
             linker: ShapePath {
                 capStyle: ShapePath.RoundCap
                 joinStyle: ShapePath.BevelJoin
-                startX: spatialUI.linkerStart.x
-                startY: spatialUI.linkerStart.y
-                strokeColor: spatialUI.hovered || spatialUI.dragging ? "black" : "white"
-                strokeWidth: 4 * spatialUI.scaleFactor
+                startX: ui.linkerStart.x
+                startY: ui.linkerStart.y
+                strokeColor: ui.hovered || ui.dragging ? "black" : "white"
+                strokeWidth: 4 * ui.scaleFactor
 
                 PathLine {
-                    x: spatialUI.linkerEnd.x
-                    y: spatialUI.linkerEnd.y
+                    x: ui.linkerEnd.x
+                    y: ui.linkerEnd.y
                 }
             }
 
             onEntered: () => {
-                if (!spatialUI.dragging) {
-                    spatialUI.mouseArea.cursorShape = Qt.OpenHandCursor;
+                if (!ui.dragging) {
+                    ui.mouseArea.cursorShape = Qt.OpenHandCursor;
                 }
             }
             onExited: () => {
-                if (!spatialUI.dragging) {
-                    spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
+                if (!ui.dragging) {
+                    ui.mouseArea.cursorShape = Qt.ArrowCursor;
                 }
             }
-            onPositionChanged: mouse => spatialUI.drag(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y)
+            onPositionChanged: mouse => ui.drag(mouse.x + ui.contentItem.x, mouse.y + ui.contentItem.y)
             onPressed: mouse => {
-                const pos = Qt.vector2d(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y);
-                spatialUI.offsetFactors = (Qt.vector2d(mouse.x, mouse.y).minus(Qt.vector2d(spatialUI.sizeScaled.x / 2, spatialUI.sizeScaled.y / 2))).times(Qt.vector2d(1 / spatialUI.sizeScaled.x, 1 / spatialUI.sizeScaled.y));
-                spatialUI.startDrag(pos);
+                //const pos = Qt.vector2d(mouse.x + ui.contentItem.x, mouse.y + ui.contentItem.y);
+                //ui.offsetFactors = (Qt.vector2d(mouse.x, mouse.y).minus(Qt.vector2d(ui.sizeScaled.x / 2, ui.sizeScaled.y / 2))).times(Qt.vector2d(1 / ui.sizeScaled.x, 1 / ui.sizeScaled.y));
+                //ui.startDrag(pos);
+                ui.beginDrag(mouse.x + ui.contentItem.x, mouse.y + ui.contentItem.y);
             }
-            onReleased: () => spatialUI.endDrag()
+            onReleased: () => ui.endDrag()
 
             Rectangle {
                 anchors.fill: parent
-                border.color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
-                border.width: spatialUI.hovered || spatialUI.dragging ? 4 : 2
-                color: spatialUI.dragging || spatialUI.dragging ? "white" : (spatialUI.hovered || spatialUI.dragging ? "black" : "white")
+                border.color: ui.hovered || ui.dragging ? "white" : "black"
+                border.width: ui.hovered || ui.dragging ? 4 : 2
+                color: ui.dragging || ui.dragging ? "white" : (ui.hovered || ui.dragging ? "black" : "white")
                 radius: 10
 
                 Text {
                     anchors.centerIn: parent
-                    color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
-                    font.pixelSize: 16 * spatialUI.scaleFactor
-                    text: "SpatialUI"
-                    visible: !spatialUI.dragging
+                    color: ui.hovered || ui.dragging ? "white" : "black"
+                    font.pixelSize: 16 * ui.scaleFactor
+                    text: "ui"
+                    visible: !ui.dragging
                 }
 
                 Text {
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 3 * spatialUI.scaleFactor
+                    anchors.bottomMargin: 3 * ui.scaleFactor
                     anchors.horizontalCenter: parent.horizontalCenter
-                    color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
-                    enabled: !spatialUI.dragging
-                    font.pixelSize: 8 * spatialUI.scaleFactor
-                    text: !spatialUI.dragging ? "Click and hold to move" : ""
-                    visible: !spatialUI.dragging
+                    color: ui.hovered || ui.dragging ? "white" : "black"
+                    enabled: !ui.dragging
+                    font.pixelSize: 8 * ui.scaleFactor
+                    text: !ui.dragging ? "Click and hold to move" : ""
+                    visible: !ui.dragging
                 }
 
                 Image {
                     id: moveIcon
 
                     anchors.centerIn: parent
-                    height: 20 * spatialUI.scaleFactor
+                    height: 20 * ui.scaleFactor
                     source: "img/move.png"
-                    visible: spatialUI.dragging
-                    width: 20 * spatialUI.scaleFactor
+                    visible: ui.dragging
+                    width: 20 * ui.scaleFactor
                 }
 
                 Text {
                     anchors.bottom: parent.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: "black"
-                    enabled: spatialUI.dragging
-                    font.pixelSize: 8 * spatialUI.scaleFactor
-                    text: spatialUI.dragging ? spatialUI.altText : ""
-                    visible: spatialUI.dragging
+                    enabled: ui.dragging
+                    font.pixelSize: 8 * ui.scaleFactor
+                    text: ui.dragging ? ui.altText : ""
+                    visible: ui.dragging
                 }
             }
         }
@@ -338,14 +378,14 @@ Window {
             propagateComposedEvents: true
 
             onPositionChanged: mouse => {
-                if (spatialUI.dragging) {
-                    spatialUI.drag(mouse.x, mouse.y);
+                if (ui.dragging) {
+                    ui.drag(mouse.x, mouse.y);
                     mouse.accepted = true;
                 }
             }
             onReleased: mouse => {
-                if (spatialUI.dragging) {
-                    spatialUI.endDrag();
+                if (ui.dragging) {
+                    ui.endDrag();
                 }
             }
         }
