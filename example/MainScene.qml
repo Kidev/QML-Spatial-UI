@@ -64,11 +64,13 @@ Window {
             }
         }
 
-        OrbitCameraController {
+        OrbitCameraControllerCustom {
             id: orbitCameraController
 
             anchors.fill: parent
+            buttonsToPan: Qt.RightButton
             camera: perspectiveCamera
+            modifiersToPan: Qt.NoModifier
             mouseEnabled: !spatialUI.dragging
             origin: originNode
             panEnabled: true
