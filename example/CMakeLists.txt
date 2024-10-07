@@ -9,8 +9,6 @@ set(
     img/github.png
 )
 
-set(CMAKE_BUILD_TYPE MinSizeRel)
-
 qt_add_executable(exampleExec ${EXAMPLE_SOURCES})
 
 if (DEBUG)

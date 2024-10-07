@@ -16,6 +16,10 @@ target_link_libraries(
 target_include_directories(SpatialUILib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(SpatialUILib PUBLIC -Wall -Werror -Wpedantic)
 
+if (EMSCRIPTEN)
+    target_compile_options(SpatialUILib PUBLIC -Os -DNDEBUG)
+endif ()
+
 qt_add_qml_module(
     SpatialUILib
     URI SpatialUI

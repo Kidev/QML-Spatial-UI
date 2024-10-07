@@ -23,6 +23,7 @@ mkdir -p build
   -DCMAKE_TOOLCHAIN_FILE=${QT_TOOLCHAIN} \
   -DCMAKE_PREFIX_PATH=${QT_ROOT} \
   -DEMSCRIPTEN=ON \
+  -DCMAKE_BUILD_TYPE=MinSizeRel \
   -DBUILD_EXAMPLE=ON
 cmake --build build/
 
