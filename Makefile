@@ -1,13 +1,13 @@
 QT_ROOT ?= "/opt/Qt"
 QT_VERSION ?= "6.7.3"
-EMSDK_VERSION ?= "3.1.37"
+EMSDK_VERSION ?= "3.1.50"
 
-all: desktop
+all: desktop run
 
-desktop:
+desktop: clean
 	@bash example/build.sh "$(QT_ROOT)" "$(QT_VERSION)"
 
-web:
+web: clean
 	@bash example/build-web.sh "$(QT_ROOT)" "$(QT_VERSION)" "$(EMSDK_VERSION)"
 
 run-web:

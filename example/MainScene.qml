@@ -350,4 +350,47 @@ Window {
             }
         }
     }
+
+    Image {
+        id: githubLogo
+
+        anchors.margins: 10
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: 32
+        source: "img/github.png"
+        width: 32
+        z: 10
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+
+            onClicked: {
+                Qt.openUrlExternally("https://github.com/Kidev/QML-Spatial-UI");
+            }
+        }
+    }
+
+    Image {
+        id: kidevLogo
+
+        anchors.margins: 10
+        anchors.right: githubLogo.left
+        anchors.top: parent.top
+        height: 32
+        source: "img/logo.png"
+        sourceSize: Qt.size(32, 32)
+        width: 32
+        z: 10
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+
+            onClicked: {
+                Qt.openUrlExternally("https://www.kidev.org");
+            }
+        }
+    }
 }
