@@ -31,8 +31,8 @@ cp example/img/logo.png build/example/logo.png -f
 
 mv build/example/exampleExec.html build/example/index.html
 
-sed -i 's#<title>exampleExec</title>#<title>QML Spatial UI | Kidev<\/title><link rel="icon" src="favicon.ico" type="image/x-icon">#g' build/example/index.html
-sed -i "s#<strong>Qt for WebAssembly: exampleExec</strong>#<strong style='color:\#ffffff'>Kidev's QML Spatial UI powered by Qt6</strong>#g" build/example/index.html
+sed -i 's#<title>exampleExec</title>#<title>QML Spatial UI | Kidev.org<\/title><link rel="icon" href="favicon.ico" type="image/x-icon">#g' build/example/index.html
+sed -i "s#<strong>Qt for WebAssembly: exampleExec</strong>#<strong style='color:\#ffffff'>QML Spatial UI</strong></br>Written by Kidev using Qt#g" build/example/index.html
 sed -i "s# height: 100% }# height: 100%; background-color:\#01010c;#g" build/example/index.html
 sed -i 's#<img src="qtlogo.svg" width="320" height="200"#<img src="logo.png" width="320" height="320"#g' build/example/index.html
 sed -i 's/\/\*.*\*\///g' build/example/index.html
