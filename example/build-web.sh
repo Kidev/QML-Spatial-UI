@@ -1,13 +1,15 @@
 QT_ROOT=$1
 QT_VERSION=$2
 EMSDK_VERSION=$3
+QT_HOST_ARCH=$4
+QT_TARGET_ARCH=$5
 
 QT_VERSION_NAME="Qt${QT_VERSION:0:1}"
-QT_ROOT_WASM="${QT_ROOT}/${QT_VERSION}/wasm_multithread"
-QT_ROOT_GCC="${QT_ROOT}/${QT_VERSION}/gcc_64"
-QT_HOST_CMAKE_DIR="${QT_ROOT_GCC}/lib/cmake"
-QT_MODULE_PATH="${QT_ROOT_WASM}/lib/cmake/${QT_VERSION_NAME}"
-QT_TOOLCHAIN="${QT_ROOT_WASM}/lib/cmake/${QT_VERSION_NAME}/qt.toolchain.cmake"
+QT_ROOT_TARGET="${QT_ROOT}/${QT_VERSION}/${QT_TARGET_ARCH}"
+QT_ROOT_HOST="${QT_ROOT}/${QT_VERSION}/${QT_HOST_ARCH}"
+QT_HOST_CMAKE_DIR="${QT_ROOT_HOST}/lib/cmake"
+QT_MODULE_PATH="${QT_ROOT_TARGET}/lib/cmake/${QT_VERSION_NAME}"
+QT_TOOLCHAIN="${QT_ROOT_TARGET}/lib/cmake/${QT_VERSION_NAME}/qt.toolchain.cmake"
 
 git clone https://github.com/emscripten-core/emsdk.git
 ./emsdk/emsdk install ${EMSDK_VERSION}
@@ -17,7 +19,7 @@ source ./emsdk/emsdk_env.sh
 
 mkdir -p build
 ./emsdk/upstream/emscripten/emcmake cmake -G Ninja -S . -B build \
-  -DQT_HOST_PATH=${QT_ROOT_GCC} \
+  -DQT_HOST_PATH=${QT_ROOT_HOST} \
   -DQT_HOST_PATH_CMAKE_DIR=${QT_HOST_CMAKE_DIR} \
   -DQt6_DIR=${QT_MODULE_PATH} \
   -DCMAKE_TOOLCHAIN_FILE=${QT_TOOLCHAIN} \

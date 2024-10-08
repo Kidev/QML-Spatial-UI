@@ -30,14 +30,15 @@ else ()
     )
 endif ()
 
-target_compile_options(
-    exampleExec
-    PUBLIC -Wall
-           -Werror
-           -Wpedantic
-           -Os
-           -DNDEBUG
-)
+if (MSVC)
+    target_compile_options(exampleExec PUBLIC /W4 /WX)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(exampleExec PUBLIC -Wall -Werror -Wpedantic)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(exampleExec PUBLIC -Wall -Werror -Wpedantic)
+else ()
+    message(WARNING "Unknown compiler, no flags set.")
+endif ()
 
 if (EMSCRIPTEN)
     target_compile_options(exampleExec PUBLIC -Os -DNDEBUG)

@@ -1,4 +1,4 @@
-name: Build and deploy WASM demo
+name: Build and deploy demo
 
 on:
   push:
@@ -12,6 +12,8 @@ jobs:
       workspace_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI'
       qt_version: '6.6.0'
       emsdk_version: '3.1.37'
+      qt_host_arch: 'gcc_64'
+      qt_target_arch: 'wasm_singlethread'
       qt_modules: 'qtquick3d qtquicktimeline qtshadertools'
       qt_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt'
       target_folder: 'QML-Spatial-UI'
@@ -45,7 +47,7 @@ jobs:
       - name: Install ninja-build tool
         uses: seanmiddleditch/gha-setup-ninja@v5
 
-      - name: Install Qt gcc_64
+      - name: Install Qt for host architecture
         uses: jurplel/install-qt-action@v3
         with:
           aqtversion: '==3.1.*'
@@ -53,13 +55,13 @@ jobs:
           host: 'linux'
           target: 'desktop'
           set-env: 'false'
-          arch: 'gcc_64'
+          arch: ${{ env.qt_host_arch }}
           dir: ${{ env.workspace_root }}
           modules: ${{ env.qt_modules }}
           cache: 'true'
-          cache-key-prefix: "install-qt-gcc"
+          cache-key-prefix: "install-qt-host"
 
-      - name: Install Qt wasm_multithread
+      - name: Install Qt for target architecture
         uses: jurplel/install-qt-action@v3
         with:
           aqtversion: '==3.1.*'
@@ -67,16 +69,21 @@ jobs:
           host: 'linux'
           target: 'desktop'
           set-env: 'true'
-          arch: 'wasm_multithread'
+          arch: ${{ env.qt_target_arch }}
           dir: ${{ env.workspace_root }}
           modules: ${{ env.qt_modules }}
           cache: 'true'
-          cache-key-prefix: "install-qt-wasm"
+          cache-key-prefix: "install-qt-target"
 
       - name: CMake Build
         shell: bash
         run: |
-          make web QT_ROOT=${{ env.qt_root }} QT_VERSION=${{ env.qt_version }} EMSDK_VERSION=${{ env.emsdk_version }}
+          make web \
+          QT_ROOT=${{ env.qt_root }} \
+          QT_VERSION=${{ env.qt_version }} \
+          QT_HOST_ARCH=${{ env.qt_host_arch }} \
+          QT_TARGET_ARCH=${{ env.qt_target_arch }} \
+          EMSDK_VERSION=${{ env.emsdk_version }}
 
       - name: Upload to FTP
         shell: bash
@@ -86,4 +93,3 @@ jobs:
           mirror -R --only-newer --verbose ${{ env.source_folder }} ${{ env.target_folder }}
           quit
           EOF
-

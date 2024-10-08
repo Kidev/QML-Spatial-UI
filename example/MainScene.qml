@@ -18,35 +18,12 @@ Window {
         anchors.fill: parent
         camera: perspectiveCamera
 
-        /*environment: SceneEnvironment {
-            backgroundMode: SceneEnvironment.SkyBox
-
-            lightProbe: Texture {
-                textureData: ProceduralSkyTextureData {
-                }
-            }
-
-            backgroundMode: SceneEnvironment.Color
-            clearColor: theFog.color
-            fog: theFog
-        }*/
-
         environment: SceneEnvironment {
-
-            //antialiasingMode: SceneEnvironment.SSAA
             antialiasingMode: SceneEnvironment.MSAA
             antialiasingQuality: SceneEnvironment.High
-            //backgroundMode: SceneEnvironment.
             backgroundMode: SceneEnvironment.Color
             clearColor: theFog.color
             fog: theFog
-
-            //lightProbe: Texture {
-            //    source: "/res/img/skybox/skybox.ktx"
-            //}
-            //lightProbe: Texture {
-            //    textureData: ProceduralSkyTextureData {}
-            //}
         }
 
         PointLight {
@@ -70,7 +47,7 @@ Window {
             density: 0.99
             depthEnabled: true
             depthFar: 10000
-            depthNear: 5000
+            depthNear: 7000
             enabled: true
         }
 
@@ -80,7 +57,7 @@ Window {
             enableXZGrid: true
             enableYZGrid: false
             gridColor: "#ffffff"
-            gridOpacity: 1
+            gridOpacity: 0.5
             scale: Qt.vector3d(5, 1, 5)
         }
 
@@ -185,11 +162,6 @@ Window {
             Component.onCompleted: () => eulerRotation.y = 360
         }
 
-        /*DirectionalLight {
-            eulerRotation.x: -30
-            eulerRotation.y: -70
-        }*/
-
         SpatialItem {
             id: spatialUI
 
@@ -277,7 +249,6 @@ Window {
                 const pos = Qt.vector2d(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y);
                 spatialUI.offsetFactors = (Qt.vector2d(mouse.x, mouse.y).minus(Qt.vector2d(spatialUI.sizeScaled.x / 2, spatialUI.sizeScaled.y / 2))).times(Qt.vector2d(1 / spatialUI.sizeScaled.x, 1 / spatialUI.sizeScaled.y));
                 spatialUI.startDrag(pos);
-                //orbitCameraController.dragHandlerMove.target = spatialUI;
             }
             onReleased: () => spatialUI.endDrag()
 
@@ -312,7 +283,7 @@ Window {
 
                     anchors.centerIn: parent
                     height: 20 * spatialUI.scaleFactor
-                    source: "img/move.png"
+                    source: "qrc:/img/move.png"
                     visible: spatialUI.dragging
                     width: 20 * spatialUI.scaleFactor
                 }
@@ -351,7 +322,6 @@ Window {
                 capStyle: ShapePath.FlatCap
                 fillColor: "white"
                 joinStyle: ShapePath.BevelJoin
-                //pathHints: ShapePath.PathConvex | ShapePath.PathLinear | ShapePath.PathNonIntersecting
                 startX: spatialNameTag.linkerEnd.x
                 startY: spatialNameTag.linkerEnd.y - uiRectangle.border.width + (uiRectangle.height / 2) - 1
                 strokeColor: spatialNameTag.hovered ? "black" : "white"
@@ -421,7 +391,7 @@ Window {
         anchors.right: parent.right
         anchors.top: parent.top
         height: 32
-        source: "img/github.png"
+        source: "qrc:/img/github.png"
         width: 32
         z: 10
 
@@ -442,7 +412,7 @@ Window {
         anchors.right: githubLogo.left
         anchors.top: parent.top
         height: 32
-        source: "img/logo.png"
+        source: "qrc:/img/logo.png"
         sourceSize: Qt.size(32, 32)
         width: 32
         z: 10

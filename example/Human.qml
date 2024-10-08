@@ -26,7 +26,7 @@ Node {
             castsShadows: true
             materials: [principledMaterial]
             receivesShadows: true
-            source: "meshes/human.mesh"
+            source: "qrc:/meshes/human.mesh"
         }
     }
 }
