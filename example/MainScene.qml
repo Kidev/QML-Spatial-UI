@@ -226,7 +226,7 @@ Window {
                 startX: spatialUI.linkerStart.x
                 startY: spatialUI.linkerStart.y
                 strokeColor: spatialUI.hovered || spatialUI.dragging ? "black" : "white"
-                strokeWidth: 4 * spatialUI.scaleFactor
+                strokeWidth: 4
 
                 PathLine {
                     x: spatialUI.linkerEnd.x
@@ -253,6 +253,8 @@ Window {
             onReleased: () => spatialUI.endDrag()
 
             Rectangle {
+                id: spatialRectangle
+
                 anchors.fill: parent
                 border.color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
                 border.width: spatialUI.hovered || spatialUI.dragging ? 4 : 2
@@ -262,18 +264,18 @@ Window {
                 Text {
                     anchors.centerIn: parent
                     color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
-                    font.pixelSize: 16 * spatialUI.scaleFactor
+                    font.pixelSize: 16
                     text: "SpatialUI"
                     visible: !spatialUI.dragging
                 }
 
                 Text {
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 3 * spatialUI.scaleFactor
+                    anchors.bottomMargin: 3
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
                     enabled: !spatialUI.dragging
-                    font.pixelSize: 8 * spatialUI.scaleFactor
+                    font.pixelSize: 8
                     text: !spatialUI.dragging ? "Click and hold to move" : ""
                     visible: !spatialUI.dragging
                 }
@@ -282,10 +284,10 @@ Window {
                     id: moveIcon
 
                     anchors.centerIn: parent
-                    height: 20 * spatialUI.scaleFactor
+                    height: 20
                     source: "qrc:/img/move.png"
                     visible: spatialUI.dragging
-                    width: 20 * spatialUI.scaleFactor
+                    width: 20
                 }
 
                 Text {
@@ -293,7 +295,7 @@ Window {
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: "black"
                     enabled: spatialUI.dragging
-                    font.pixelSize: 8 * spatialUI.scaleFactor
+                    font.pixelSize: 8
                     text: spatialUI.dragging ? spatialUI.altText : ""
                     visible: spatialUI.dragging
                 }
@@ -323,9 +325,9 @@ Window {
                 fillColor: "white"
                 joinStyle: ShapePath.BevelJoin
                 startX: spatialNameTag.linkerEnd.x
-                startY: spatialNameTag.linkerEnd.y - uiRectangle.border.width + (uiRectangle.height / 2) - 1
+                startY: spatialNameTag.linkerEnd.y - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height * spatialNameTag.scaleFactor / 2) - 1
                 strokeColor: spatialNameTag.hovered ? "black" : "white"
-                strokeWidth: 1 * spatialNameTag.scaleFactor
+                strokeWidth: 1
 
                 PathLine {
                     x: spatialNameTag.linkerStart.x
@@ -333,8 +335,8 @@ Window {
                 }
 
                 PathLine {
-                    x: spatialNameTag.linkerEnd.x + 20 * spatialNameTag.scaleFactor
-                    y: spatialNameTag.linkerEnd.y - uiRectangle.border.width + (uiRectangle.height / 2) - 1
+                    x: spatialNameTag.linkerEnd.x + (0.1 * uiRectangle.width * spatialNameTag.scaleFactor)
+                    y: spatialNameTag.linkerEnd.y - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height * spatialNameTag.scaleFactor / 2) - 1
                 }
             }
 
@@ -354,7 +356,7 @@ Window {
                 Text {
                     anchors.centerIn: parent
                     color: "black"
-                    font.pixelSize: 15.0 * spatialNameTag.scaleFactor
+                    font.pixelSize: 15.0
                     horizontalAlignment: Text.AlignHCenter
                     text: !spatialNameTag.textClicked ? "You spin me right 'round\nbaby, right 'round\n" : "Like a record, baby\nright 'round, 'round, 'round"
                     verticalAlignment: Text.AlignVCenter

@@ -16,7 +16,7 @@ Item {
     property bool hoverEnabled: false
     property bool hovered: false
     property alias linker: linkerShape.data
-    readonly property vector2d linkerEnd: Qt.vector2d(root.targetLinkEndOffset.x + (root.size.width / 2) * root.scaleFactor, root.targetLinkEndOffset.y + (root.size.height / 2) * root.scaleFactor)
+    readonly property vector2d linkerEnd: Qt.vector2d(root.targetLinkEndOffset.x + (root.contentItem.width / 2), root.targetLinkEndOffset.y + (root.contentItem.height / 2))
     readonly property vector2d linkerStart: Qt.vector2d(root.targetLinkStartOffset.x, root.targetLinkStartOffset.y)
     property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
@@ -149,10 +149,17 @@ Item {
     Item {
         id: contentItem
 
-        height: root.size.height * root.scaleFactor
-        width: root.size.width * root.scaleFactor
+        height: root.size.height
+        width: root.size.width
         x: root.targetLinkEndOffset.x
         y: root.targetLinkEndOffset.y
+
+        transform: Scale {
+            origin.x: contentItem.width / 2
+            origin.y: contentItem.height / 2
+            xScale: root.scaleFactor
+            yScale: root.scaleFactor
+        }
 
         MouseArea {
             id: itemMouseArea
