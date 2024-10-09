@@ -123,6 +123,10 @@ Item {
     }
 
     Connections {
+        function onActiveChanged() {
+            root.updateSceneProjection();
+        }
+
         function onHeightChanged() {
             root.updateSceneProjection();
         }
@@ -135,6 +139,10 @@ Item {
     }
 
     Connections {
+        function onActiveChanged() {
+            root.updateSceneProjection();
+        }
+
         function onHeightChanged() {
             root.updateSceneProjection();
         }

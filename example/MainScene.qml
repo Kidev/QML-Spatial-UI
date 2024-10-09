@@ -317,17 +317,17 @@ Window {
             offsetLinkStart: Qt.vector3d(0, 125, 0)
             showLinker: true
             size: Qt.size(200, 50)
-            stackingOrderLinker: 1
+            stackingOrderLinker: spatialNameTag.linkerStart.y <= spatialNameTag.linkerEnd.y + uiRectangle.height * spatialNameTag.scaleFactor / 2 ? -1 : 1
             target: targetHuman
 
             linker: ShapePath {
                 capStyle: ShapePath.FlatCap
                 fillColor: "white"
                 joinStyle: ShapePath.BevelJoin
-                startX: spatialNameTag.linkerEnd.x
-                startY: spatialNameTag.linkerEnd.y - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height * spatialNameTag.scaleFactor / 2) - 1
-                strokeColor: spatialNameTag.hovered ? "black" : "white"
-                strokeWidth: 1
+                startX: spatialNameTag.linkerEnd.x - (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
+                startY: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
+                strokeColor: uiRectangle.border.color
+                strokeWidth: uiRectangle.border.width * spatialNameTag.scaleFactor
 
                 PathLine {
                     x: spatialNameTag.linkerStart.x
@@ -335,8 +335,8 @@ Window {
                 }
 
                 PathLine {
-                    x: spatialNameTag.linkerEnd.x + (0.1 * uiRectangle.width * spatialNameTag.scaleFactor)
-                    y: spatialNameTag.linkerEnd.y - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height * spatialNameTag.scaleFactor / 2) - 1
+                    x: spatialNameTag.linkerEnd.x + (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
+                    y: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
                 }
             }
 
@@ -361,6 +361,15 @@ Window {
                     text: !spatialNameTag.textClicked ? "You spin me right 'round\nbaby, right 'round\n" : "Like a record, baby\nright 'round, 'round, 'round"
                     verticalAlignment: Text.AlignVCenter
                 }
+
+                // Rectangle {
+                //     anchors.bottom: uiRectangle.bottom
+                //     anchors.bottomMargin: -1
+                //     anchors.horizontalCenter: uiRectangle.horizontalCenter
+                //     color: "white"
+                //     height: uiRectangle.border.width * 2
+                //     width: (0.2 * uiRectangle.width)
+                // }
             }
         }
 
