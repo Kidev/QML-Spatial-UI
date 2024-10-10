@@ -193,7 +193,6 @@ Window {
                 spatialUI.initialTargetPosition = spatialUI.target.position;
                 spatialUI.dragging = true;
                 spatialUI.mouseArea.cursorShape = Qt.ClosedHandCursor;
-                spatialUI.drag(pos.x, pos.y);
             }
 
             camera: perspectiveCamera
