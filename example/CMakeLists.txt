@@ -1,5 +1,5 @@
 set(EXAMPLE_SOURCES main.cpp)
-set(EXAMPLE_QML MainScene.qml Human.qml OrbitCameraControllerCustom.qml)
+set(EXAMPLE_QML MainScene.qml OrbitCameraControllerCustom.qml)
 set(
     EXAMPLE_RESOURCES
     meshes/human.mesh

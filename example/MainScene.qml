@@ -135,13 +135,20 @@ Window {
             ]
         }
 
-        Human {
+        ResourceLoader {
+            meshSources: [targetHuman.source]
+        }
+
+        Model {
             id: targetHuman
 
+            castsShadows: true
             eulerRotation: Qt.vector3d(0, 0, 0)
             pivot: Qt.vector3d(-20, 0, 0)
             position: Qt.vector3d(100, 0, 0)
+            receivesShadows: true
             scale: Qt.vector3d(20, 20, 20)
+            source: "qrc:/meshes/human.mesh"
 
             RotationAnimation on eulerRotation.y {
                 direction: RotationAnimation.Counterclockwise
@@ -150,6 +157,16 @@ Window {
                 loops: Animation.Infinite
                 to: 0
             }
+            materials: [
+                PrincipledMaterial {
+                    id: principledMaterial
+
+                    alphaMode: PrincipledMaterial.Opaque
+                    baseColor: "black"
+                    metalness: 0
+                    roughness: 1
+                }
+            ]
 
             Component.onCompleted: () => eulerRotation.y = 360
         }
@@ -166,7 +183,7 @@ Window {
                 if (spatialUI.dragging) {
                     spatialUI.mouseArea.cursorShape = Qt.DragMoveCursor;
                     const currentPos = Qt.vector2d(x, y);
-                    const adjustedMousePosition = currentPos.minus(spatialUI.linkerEnd.minus(spatialUI.linkerStart)).minus(spatialUI.firstPos.times(spatialUI.scaleFactor));
+                    const adjustedMousePosition = currentPos.minus(spatialUI.linkerEnd.minus(spatialUI.screenTargetCenterBase)).minus(spatialUI.firstPos.times(spatialUI.scaleFactor));
                     const pickResults = view3D.pickAll(adjustedMousePosition.x, adjustedMousePosition.y);
                     for (var i = 0; i < pickResults.length; i++) {
                         let pickResult = pickResults[i];
@@ -203,8 +220,10 @@ Window {
             forceTopStacking: spatialUI.hovered || spatialUI.dragging
             hoverEnabled: true
             mouseEnabled: true
-            offsetLinkEnd: Qt.vector3d(0, 250, 50)
-            offsetLinkStart: Qt.vector3d(0, -50, 0)
+            offsetLinkEnd: Qt.vector3d(0, 150, 50)
+            offsetLinkEnd2D: Qt.vector2d(0, 0)
+            offsetLinkStart: Qt.vector3d(0, 50, 0)
+            offsetLinkStart2D: Qt.vector2d(0, 0)
             showLinker: true
             size: Qt.size(100, 50)
             target: targetModel
@@ -303,8 +322,10 @@ Window {
             fixedSize: false
             hoverEnabled: true
             mouseEnabled: true
-            offsetLinkEnd: Qt.vector3d(0, 300, 50)
+            offsetLinkEnd: Qt.vector3d(0, 150, 50)
+            offsetLinkEnd2D: Qt.vector2d(0, 0)
             offsetLinkStart: Qt.vector3d(0, 125, 0)
+            offsetLinkStart2D: Qt.vector2d(0, 0)
             showLinker: true
             size: Qt.size(200, 50)
             stackingOrderLinker: spatialNameTag.linkerStart.y <= spatialNameTag.linkerEnd.y + uiRectangle.height * spatialNameTag.scaleFactor / 2 ? -1 : 1
@@ -320,8 +341,8 @@ Window {
                 strokeWidth: uiRectangle.border.width * spatialNameTag.scaleFactor
 
                 PathLine {
-                    x: spatialNameTag.linkerStart.x
-                    y: spatialNameTag.linkerStart.y
+                    x: spatialNameTag.screenTargetCenterTop.x
+                    y: spatialNameTag.screenTargetCenterTop.y
                 }
 
                 PathLine {

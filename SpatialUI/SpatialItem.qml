@@ -16,22 +16,30 @@ Item {
     property bool hoverEnabled: false
     property bool hovered: false
     property alias linker: linkerShape.data
-    readonly property vector2d linkerEnd: Qt.vector2d(root.targetLinkEndOffset.x + (root.size.width * root.scaleFactor / 2), root.targetLinkEndOffset.y + (root.size.height * root.scaleFactor / 2))
-    readonly property vector2d linkerStart: Qt.vector2d(root.targetLinkStartOffset.x, root.targetLinkStartOffset.y)
+    readonly property vector2d linkerEnd: root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D)
+    readonly property vector2d linkerStart: root.screenTargetCenterBaseOffseted.plus(root.offsetLinkStart2D)
     property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
     property vector3d offsetLinkEnd: Qt.vector3d(0, 0, 0)
+    property vector2d offsetLinkEnd2D: Qt.vector2d(0, 0)
     property vector3d offsetLinkStart: Qt.vector3d(0, 0, 0)
+    property vector2d offsetLinkStart2D: Qt.vector2d(0, 0)
     readonly property real scaleFactor: root.distanceFactor
+    property vector2d screenTarget
+    property vector2d screenTargetCenterBase
+    property vector2d screenTargetCenterBaseOffseted
+    property vector2d screenTargetCenterTop
+    property vector2d screenTargetCenterTopOffseted
     property bool showLinker: false
     required property size size
     readonly property vector2d sizeScaled: Qt.vector2d(root.size.width, root.size.height).times(root.scaleFactor)
     property int stackingOrder: 0
     property int stackingOrderLinker: -1
-    required property Node target
-    property vector2d targetLinkEndOffset
-    property vector2d targetLinkStartOffset
-    property vector2d targetOnScreen
+    required property Model target
+    readonly property vector3d targetCenterBase: root.target.scenePosition.plus(Qt.vector3d(((root.target.bounds.minimum.x + root.target.bounds.maximum.x) / 2), root.target.bounds.minimum.y, ((root.target.bounds.minimum.z + root.target.bounds.maximum.z) / 2)).times(root.target.scale))
+    readonly property vector3d targetCenterBaseOffseted: root.targetCenterBase.plus(root.offsetLinkStart)
+    readonly property vector3d targetCenterTop: root.target.scenePosition.plus(Qt.vector3d(((root.target.bounds.minimum.x + root.target.bounds.maximum.x) / 2), root.target.bounds.maximum.y, ((root.target.bounds.minimum.z + root.target.bounds.maximum.z) / 2)).times(root.target.scale))
+    readonly property vector3d targetCenterTopOffseted: root.targetCenterTop.plus(root.offsetLinkEnd)
     property int zDistance: 0
     readonly property int zOffset: 1000000000
 
@@ -63,12 +71,16 @@ Item {
 
     function updateSceneProjection() {
         const screenSize = Qt.vector3d(Window.width, Window.height, 1);
-        const targetOnScreen = root.camera.mapToViewport(root.target.scenePosition).times(screenSize);
-        const targetLinkStartOffset = root.camera.mapToViewport(root.target.scenePosition.plus(root.offsetLinkStart)).times(screenSize);
-        const targetLinkEndOffset = root.camera.mapToViewport(root.target.scenePosition.plus(root.offsetLinkEnd)).times(screenSize);
-        root.targetOnScreen = targetOnScreen.z > 0 ? targetOnScreen.toVector2d() : Qt.vector2d(-10000, -10000);
-        root.targetLinkStartOffset = targetLinkStartOffset.z > 0 ? targetLinkStartOffset.toVector2d() : Qt.vector2d(-10000, -10000);
-        root.targetLinkEndOffset = targetLinkEndOffset.z > 0 ? targetLinkEndOffset.toVector2d() : Qt.vector2d(-10000, -10000);
+        const screenTarget = root.camera.mapToViewport(root.target.scenePosition).times(screenSize);
+        const screenTargetCenterBase = root.camera.mapToViewport(root.targetCenterBase).times(screenSize);
+        const screenTargetCenterTop = root.camera.mapToViewport(root.targetCenterTop).times(screenSize);
+        const screenTargetCenterBaseOffseted = root.camera.mapToViewport(root.targetCenterBaseOffseted).times(screenSize);
+        const screenTargetCenterTopOffseted = root.camera.mapToViewport(root.targetCenterTopOffseted).times(screenSize);
+        root.screenTarget = screenTarget.z > 0 ? screenTarget.toVector2d() : Qt.vector2d(-10000, -10000);
+        root.screenTargetCenterBase = screenTargetCenterBase.z > 0 ? screenTargetCenterBase.toVector2d() : Qt.vector2d(-10000, -10000);
+        root.screenTargetCenterTop = screenTargetCenterTop.z > 0 ? screenTargetCenterTop.toVector2d() : Qt.vector2d(-10000, -10000);
+        root.screenTargetCenterBaseOffseted = screenTargetCenterBaseOffseted.z > 0 ? screenTargetCenterBaseOffseted.toVector2d() : Qt.vector2d(-10000, -10000);
+        root.screenTargetCenterTopOffseted = screenTargetCenterTopOffseted.z > 0 ? screenTargetCenterTopOffseted.toVector2d() : Qt.vector2d(-10000, -10000);
         root.updateDistanceFactor();
     }
 
@@ -157,8 +169,8 @@ Item {
     Item {
         id: contentItemContainer
 
-        x: root.targetLinkEndOffset.x + root.sizeScaled.x / 2
-        y: root.targetLinkEndOffset.y + root.sizeScaled.y / 2
+        x: root.linkerEnd.x
+        y: root.linkerEnd.y
 
         Item {
             id: contentItem
