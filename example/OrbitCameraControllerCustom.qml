@@ -120,11 +120,34 @@ Item {
     }
 
     PinchHandler {
+        id: movePinchHandler
+
+        acceptedDevices: PointerDevice.TouchScreen
+        acceptedModifiers: Qt.NoModifier
+        enabled: root.mouseEnabled
+        maximumPointCount: 1
+        minimumPointCount: 1
+        target: null
+
+        onActiveChanged: {
+            if (active)
+                root._mousePressed(Qt.vector2d(centroid.position.x, centroid.position.y));
+            else
+                root._mouseReleased(Qt.vector2d(centroid.position.x, centroid.position.y));
+        }
+        onCentroidChanged: {
+            root._mouseMoved(Qt.vector2d(centroid.position.x, centroid.position.y), false);
+        }
+    }
+
+    PinchHandler {
         id: pinchHandler
 
         property real distance: 0.0
 
         enabled: root.mouseEnabled
+        maximumPointCount: 2
+        minimumPointCount: 2
         target: null
 
         onActiveChanged: {
