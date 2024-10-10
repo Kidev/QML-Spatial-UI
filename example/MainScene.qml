@@ -98,6 +98,7 @@ Window {
             mouseEnabled: !spatialUI.dragging
             origin: originNode
             panEnabled: true
+            scrollEnabled: true
         }
 
         Model {

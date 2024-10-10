@@ -17,6 +17,7 @@ Item {
     property bool mouseEnabled: true
     required property Node origin
     property bool panEnabled: true
+    property bool scrollEnabled: true // only works for mouse, on mobile, the mouseEnabled controls it
     property bool xInvert: false
     property real xSpeed: 0.1
     property bool yInvert: true
@@ -166,7 +167,7 @@ Item {
         id: wheelHandler
 
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-        enabled: root.mouseEnabled
+        enabled: root.scrollEnabled
         orientation: Qt.Vertical
         target: null
 

@@ -203,7 +203,10 @@ Item {
                 onPressAndHold: mouse => root.pressAndHold(mouse)
                 onPressed: mouse => root.pressed(mouse)
                 onReleased: mouse => root.released(mouse)
-                onWheel: wheel => root.wheel(wheel)
+                onWheel: wheel => {
+                    root.wheel(wheel);
+                    wheel.accepted = false;
+                }
             }
         }
     }
