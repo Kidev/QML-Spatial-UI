@@ -1,6 +1,6 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
-// Adapted to add configurable panning keys and more controls
+// Improved for additional controls and possibilities by Kidev
 
 import QtQuick
 import QtQuick3D
@@ -8,20 +8,32 @@ import QtQuick3D
 Item {
     id: root
 
-    property int buttonsToPan: Qt.LeftButton
+    readonly property real _scrollSpeed: invertScroll ? -scrollSpeed : scrollSpeed
+    readonly property vector2d _speedPanning: Qt.vector2d(xInvertPanning ? -xSpeedPanning : xSpeedPanning, yInvertPanning ? -ySpeedPanning : ySpeedPanning)
+    readonly property real _xSpeed: xInvert ? -xSpeed : xSpeed
+    readonly property real _ySpeed: yInvert ? -ySpeed : ySpeed
+    property int buttonsToPan: Qt.RightButton
     required property Camera camera
-    property alias dragHandlerMove: moveDragHandler
-    property alias dragHandlerPan: panDragHandler
     readonly property bool inputsNeedProcessing: status.useMouse || status.isPanning
-    property int modifiersToPan: Qt.ControlModifier
+    property bool invertScroll: false
+    property int modifiersToPan: Qt.NoModifier
     property bool mouseEnabled: true
     required property Node origin
     property bool panEnabled: true
-    property bool scrollEnabled: true // only works for mouse, on mobile, the mouseEnabled controls it
+    property bool scrollEnabled: true
+    property real scrollSpeed: 1
     property bool xInvert: false
+    property bool xInvertPanning: false
+    property real xMaxAngle: 90
+    property real xMinAngle: -90
     property real xSpeed: 0.1
+    property real xSpeedPanning: 0.5
     property bool yInvert: true
+    property bool yInvertPanning: false
+    property real yMaxAngle: 361
+    property real yMinAngle: -361
     property real ySpeed: 0.1
+    property real ySpeedPanning: 0.5
 
     function _endPan() {
         status.isPanning = false;
@@ -82,6 +94,11 @@ Item {
         target: root.camera
     }
 
+    TapHandler {
+        onTapped: () => root.forceActiveFocus()
+    }
+
+    // Mouse rotation
     DragHandler {
         id: moveDragHandler
 
@@ -100,6 +117,7 @@ Item {
         }
     }
 
+    // Mouse pan
     DragHandler {
         id: panDragHandler
 
@@ -119,6 +137,7 @@ Item {
         }
     }
 
+    // Mobile rotation
     PinchHandler {
         id: movePinchHandler
 
@@ -140,37 +159,44 @@ Item {
         }
     }
 
+    // Mobile zoom
+    PinchHandler {
+        id: pinchHandlerZoom
+
+        property real distance: active ? root.camera.z : 0.0
+
+        enabled: root.scrollEnabled
+        maximumPointCount: 2
+        minimumPointCount: 2
+        target: null
+
+        onScaleChanged: () => {
+            root.camera.z = distance * root._scrollSpeed * (1 / scale);
+        }
+    }
+
+    // Mobile pan
     PinchHandler {
         id: pinchHandler
-
-        property real distance: 0.0
 
         enabled: root.mouseEnabled
         maximumPointCount: 2
         minimumPointCount: 2
         target: null
 
-        onActiveChanged: {
+        onActiveChanged: () => {
             if (active) {
                 root._startPan(Qt.vector2d(centroid.position.x, centroid.position.y));
-                distance = root.camera.z;
             } else {
                 root._endPan();
-                distance = 0.0;
             }
         }
-        onCentroidChanged: {
+        onCentroidChanged: () => {
             root._panEvent(Qt.vector2d(centroid.position.x, centroid.position.y));
         }
-        onScaleChanged: {
-            root.camera.z = distance * (1 / scale);
-        }
     }
 
-    TapHandler {
-        onTapped: root.forceActiveFocus() // qmllint disable signal-handler-parameters
-    }
-
+    // Mouse zoom
     WheelHandler {
         id: wheelHandler
 
@@ -181,7 +207,7 @@ Item {
 
         onWheel: event => {
             let delta = -event.angleDelta.y * 0.01;
-            root.camera.z += root.camera.z * 0.1 * delta;
+            root.camera.z += root.camera.z * 0.1 * delta * root._scrollSpeed;
         }
     }
 
@@ -203,6 +229,10 @@ Item {
         property vector2d lastPos: Qt.vector2d(0, 0)
         property bool useMouse: false
 
+        function clamp(val, min, max) {
+            return Math.min(Math.max(val, min), max);
+        }
+
         function negate(vector) {
             return Qt.vector3d(-vector.x, -vector.y, -vector.z);
         }
@@ -213,21 +243,17 @@ Item {
                 var rotationVector = root.origin.eulerRotation;
                 var delta = Qt.vector2d(lastPos.x - currentPos.x, lastPos.y - currentPos.y);
                 // rotate x
-                var rotateX = delta.x * xSpeed * frameDelta;
-                if (xInvert)
-                    rotateX = -rotateX;
-                rotationVector.y += rotateX;
+                var rotateX = delta.x * _xSpeed * frameDelta;
+                rotationVector.y = clamp((rotationVector.y + rotateX) % 360, yMinAngle, yMaxAngle);
 
                 // rotate y
-                var rotateY = delta.y * -ySpeed * frameDelta;
-                if (yInvert)
-                    rotateY = -rotateY;
-                rotationVector.x += rotateY;
+                var rotateY = delta.y * -_ySpeed * frameDelta;
+                rotationVector.x = clamp((rotationVector.x + rotateY) % 360, xMinAngle, xMaxAngle);
                 origin.setEulerRotation(rotationVector);
                 lastPos = currentPos;
             }
             if (isPanning) {
-                let delta = currentPanPos.minus(lastPanPos);
+                let delta = currentPanPos.minus(lastPanPos).times(_speedPanning);
                 delta.x = -delta.x;
                 delta.x = (delta.x / root.width) * camera.z * frameDelta;
                 delta.y = (delta.y / root.height) * camera.z * frameDelta;

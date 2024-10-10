@@ -94,11 +94,25 @@ Window {
             anchors.fill: parent
             buttonsToPan: Qt.RightButton
             camera: perspectiveCamera
+            invertScroll: false
             modifiersToPan: Qt.NoModifier
             mouseEnabled: !spatialUI.dragging
             origin: originNode
             panEnabled: true
             scrollEnabled: true
+            scrollSpeed: 0.5
+            xInvert: false
+            xInvertPanning: false
+            xMaxAngle: 90
+            xMinAngle: -90
+            xSpeed: 0.1
+            xSpeedPanning: 0.5
+            yInvert: true
+            yInvertPanning: false
+            yMaxAngle: 361
+            yMinAngle: -361
+            ySpeed: 0.1
+            ySpeedPanning: 0.5
         }
 
         Model {
@@ -228,19 +242,23 @@ Window {
             size: Qt.size(100, 50)
             target: targetModel
 
-            linker: ShapePath {
-                capStyle: ShapePath.RoundCap
-                joinStyle: ShapePath.BevelJoin
-                startX: spatialUI.linkerStart.x
-                startY: spatialUI.linkerStart.y
-                strokeColor: spatialUI.hovered || spatialUI.dragging ? "black" : "white"
-                strokeWidth: 3 * spatialUI.scaleFactor
+            linker: [
+                Shape {
+                    ShapePath {
+                        capStyle: ShapePath.RoundCap
+                        joinStyle: ShapePath.BevelJoin
+                        startX: spatialUI.linkerStart.x
+                        startY: spatialUI.linkerStart.y
+                        strokeColor: spatialUI.hovered || spatialUI.dragging ? "black" : "white"
+                        strokeWidth: 3 * spatialUI.scaleFactor
 
-                PathLine {
-                    x: spatialUI.linkerEnd.x
-                    y: spatialUI.linkerEnd.y
+                        PathLine {
+                            x: spatialUI.linkerEnd.x
+                            y: spatialUI.linkerEnd.y
+                        }
+                    }
                 }
-            }
+            ]
 
             onEntered: () => {
                 if (!spatialUI.dragging) {
@@ -322,6 +340,7 @@ Window {
             fixedSize: false
             hoverEnabled: true
             mouseEnabled: true
+            mouseLinkerEnabled: true
             offsetLinkEnd: Qt.vector3d(0, 150, 50)
             offsetLinkEnd2D: Qt.vector2d(0, 0)
             offsetLinkStart: Qt.vector3d(0, 125, 0)
@@ -331,25 +350,27 @@ Window {
             stackingOrderLinker: spatialNameTag.linkerStart.y <= spatialNameTag.linkerEnd.y + uiRectangle.height * spatialNameTag.scaleFactor / 2 ? -1 : 1
             target: targetHuman
 
-            linker: ShapePath {
-                capStyle: ShapePath.FlatCap
-                fillColor: "white"
-                joinStyle: ShapePath.BevelJoin
-                startX: spatialNameTag.linkerEnd.x - (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
-                startY: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
-                strokeColor: uiRectangle.border.color
-                strokeWidth: uiRectangle.border.width * spatialNameTag.scaleFactor
+            linker: [
+                ShapePath {
+                    capStyle: ShapePath.FlatCap
+                    fillColor: "white"
+                    joinStyle: ShapePath.BevelJoin
+                    startX: spatialNameTag.linkerEnd.x - (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
+                    startY: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
+                    strokeColor: uiRectangle.border.color
+                    strokeWidth: uiRectangle.border.width * spatialNameTag.scaleFactor
 
-                PathLine {
-                    x: spatialNameTag.screenTargetCenterTop.x
-                    y: spatialNameTag.screenTargetCenterTop.y
-                }
+                    PathLine {
+                        x: spatialNameTag.screenTargetCenterTop.x
+                        y: spatialNameTag.screenTargetCenterTop.y
+                    }
 
-                PathLine {
-                    x: spatialNameTag.linkerEnd.x + (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
-                    y: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
+                    PathLine {
+                        x: spatialNameTag.linkerEnd.x + (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
+                        y: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
+                    }
                 }
-            }
+            ]
 
             onClicked: () => spatialNameTag.textClicked = !spatialNameTag.textClicked
             onEntered: () => spatialNameTag.mouseArea.cursorShape = Qt.PointingHandCursor

@@ -20,6 +20,7 @@ Item {
     readonly property vector2d linkerStart: root.screenTargetCenterBaseOffseted.plus(root.offsetLinkStart2D)
     property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
+    property bool mouseLinkerEnabled: false
     property vector3d offsetLinkEnd: Qt.vector3d(0, 0, 0)
     property vector2d offsetLinkEnd2D: Qt.vector2d(0, 0)
     property vector3d offsetLinkStart: Qt.vector3d(0, 0, 0)
@@ -196,7 +197,7 @@ Item {
                 enabled: root.mouseEnabled
                 hoverEnabled: root.hoverEnabled
                 propagateComposedEvents: true
-                z: root.z + 1
+                z: root.z + 2
 
                 onCanceled: () => root.canceled()
                 onClicked: mouse => root.clicked(mouse)
@@ -226,7 +227,48 @@ Item {
     Shape {
         id: linkerShape
 
-        visible: root.showLinker
         z: root.stackingOrderLinker
+    }
+
+    Item {
+        id: linkerShapeItem
+
+        height: linkerShape.boundingRect.height
+        visible: root.showLinker
+        width: linkerShape.boundingRect.width
+        x: linkerShape.boundingRect.x
+        y: linkerShape.boundingRect.y
+
+        MouseArea {
+            id: linkerMouseArea
+
+            anchors.fill: linkerShapeItem
+            enabled: root.mouseLinkerEnabled
+            hoverEnabled: root.hoverEnabled
+            propagateComposedEvents: true
+            z: root.stackingOrderLinker + 1
+
+            onCanceled: () => root.canceled()
+            onClicked: mouse => root.clicked(mouse)
+            onDoubleClicked: mouse => root.doubleClicked(mouse)
+            onEntered: () => {
+                root.hovered = true;
+                root.entered();
+            }
+            onExited: () => {
+                root.hovered = false;
+                root.exited();
+            }
+            onPositionChanged: mouse => {
+                root.positionChanged(mouse);
+            }
+            onPressAndHold: mouse => root.pressAndHold(mouse)
+            onPressed: mouse => root.pressed(mouse)
+            onReleased: mouse => root.released(mouse)
+            onWheel: wheel => {
+                root.wheel(wheel);
+                wheel.accepted = false;
+            }
+        }
     }
 }
