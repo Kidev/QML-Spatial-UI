@@ -167,6 +167,26 @@ Window {
                     spatialUI.mouseArea.cursorShape = Qt.DragMoveCursor;
                     const currentPos = Qt.vector2d(x, y);
                     const adjustedMousePosition = currentPos.minus(spatialUI.linkerEnd.minus(spatialUI.linkerStart)).minus(spatialUI.firstPos.times(spatialUI.scaleFactor));
+                    const viewportX = adjustedMousePosition.x / view3D.width;
+                    const viewportY = adjustedMousePosition.y / view3D.height;
+                    const nearPoint = perspectiveCamera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
+                    const farPoint = perspectiveCamera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 1));
+                    const ray_start = nearPoint;
+                    const ray_direction = farPoint.minus(nearPoint).normalized();
+                    const plane_normal = Qt.vector3d(0, 1, 0);
+                    const plane_point = Qt.vector3d(0, 0, 0);
+                    const denominator = ray_direction.dotProduct(plane_normal);
+                    if (Math.abs(denominator) > 0.0001) {
+                        const t = plane_point.minus(ray_start).dotProduct(plane_normal) / denominator;
+                        if (t >= 0) {
+                            const intersection = ray_start.plus(ray_direction.times(t));
+                            spatialUI.altText = `${+intersection.x.toFixed(1)}`.padStart(7) + ' ; ' + `${+intersection.z.toFixed(1)}`.padEnd(7);
+                            spatialUI.target.position = Qt.vector3d(intersection.x, spatialUI.initialTargetPosition.y, intersection.z);
+                        }
+                    }
+
+                    /* This ignores perspective and can lead to imprecision, but should work in orth
+
                     const pickResults = view3D.pickAll(adjustedMousePosition.x, adjustedMousePosition.y);
                     for (var i = 0; i < pickResults.length; i++) {
                         let pickResult = pickResults[i];
@@ -176,6 +196,7 @@ Window {
                             break;
                         }
                     }
+                    */
                 }
             }
 
@@ -204,7 +225,7 @@ Window {
             hoverEnabled: true
             mouseEnabled: true
             offsetLinkEnd: Qt.vector3d(0, 250, 50)
-            offsetLinkStart: Qt.vector3d(0, 0, 0)
+            offsetLinkStart: Qt.vector3d(0, -50, 0)
             showLinker: true
             size: Qt.size(100, 50)
             target: targetModel
