@@ -195,16 +195,24 @@ Window {
 
             function drag(x: real, y: real) {
                 if (spatialUI.dragging) {
-                    spatialUI.mouseArea.cursorShape = Qt.DragMoveCursor;
+                    spatialUI.cursor = Qt.DragMoveCursor;
                     const currentPos = Qt.vector2d(x, y);
                     const adjustedMousePosition = currentPos.minus(spatialUI.linkerEnd.minus(spatialUI.screenTargetCenterBase)).minus(spatialUI.firstPos.times(spatialUI.scaleFactor));
-                    const pickResults = view3D.pickAll(adjustedMousePosition.x, adjustedMousePosition.y);
-                    for (var i = 0; i < pickResults.length; i++) {
-                        let pickResult = pickResults[i];
-                        if (pickResult.objectHit.objectName === "raycastPlane") {
-                            spatialUI.altText = `${+(pickResult.scenePosition.x).toFixed(1)}`.padStart(7) + ' ; ' + `${+(pickResult.scenePosition.z).toFixed(1)}`.padEnd(7);
-                            spatialUI.target.position = Qt.vector3d(pickResult.scenePosition.x, spatialUI.initialTargetPosition.y, pickResult.scenePosition.z);
-                            break;
+                    const viewportX = adjustedMousePosition.x / view3D.width;
+                    const viewportY = adjustedMousePosition.y / view3D.height;
+                    const nearPoint = perspectiveCamera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
+                    const farPoint = perspectiveCamera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 1));
+                    const ray_start = nearPoint;
+                    const ray_direction = farPoint.minus(nearPoint).normalized();
+                    const plane_normal = Qt.vector3d(0, 1, 0);
+                    const plane_point = Qt.vector3d(0, 0, 0);
+                    const denominator = ray_direction.dotProduct(plane_normal);
+                    if (Math.abs(denominator) > 0.0001) {
+                        const t = plane_point.minus(ray_start).dotProduct(plane_normal) / denominator;
+                        if (t >= 0) {
+                            const intersection = ray_start.plus(ray_direction.times(t));
+                            spatialUI.altText = `${+intersection.x.toFixed(1)}`.padStart(7) + ' ; ' + `${+intersection.z.toFixed(1)}`.padEnd(7);
+                            spatialUI.target.position = Qt.vector3d(intersection.x, spatialUI.initialTargetPosition.y, intersection.z);
                         }
                     }
                 }
@@ -220,8 +228,8 @@ Window {
                 }
             }
 
-            function startDrag(pos: vector2d) {
-                spatialUI.firstPos = pos.minus(Qt.vector2d(spatialUI.contentItem.relativeX, spatialUI.contentItem.relativeY));
+            function startDrag(x: real, y: real) {
+                spatialUI.firstPos = Qt.vector2d(x, y);
                 spatialUI.initialTargetPosition = spatialUI.target.position;
                 spatialUI.dragging = true;
                 spatialUI.mouseArea.cursorShape = Qt.ClosedHandCursor;
@@ -244,6 +252,26 @@ Window {
             target: targetModel
 
             linker: [
+                ShapePath {
+                    capStyle: ShapePath.FlatCap
+                    fillColor: "white"
+                    joinStyle: ShapePath.BevelJoin
+                    startX: spatialUI.linkerEnd.x - (0.1 * spatialRectangle.width) * spatialUI.scaleFactor
+                    startY: spatialUI.linkerEnd.y - 1 - (spatialRectangle.border.width * spatialUI.scaleFactor) + (spatialRectangle.height / 2) * spatialUI.scaleFactor
+                    strokeColor: spatialRectangle.border.color
+                    strokeWidth: spatialRectangle.border.width * spatialUI.scaleFactor
+
+                    PathLine {
+                        x: spatialUI.screenTargetCenterTop.x
+                        y: spatialUI.screenTargetCenterTop.y
+                    }
+
+                    PathLine {
+                        x: spatialUI.linkerEnd.x + (0.1 * spatialRectangle.width) * spatialUI.scaleFactor
+                        y: spatialUI.linkerEnd.y - 1 - (spatialRectangle.border.width * spatialUI.scaleFactor) + (spatialRectangle.height / 2) * spatialUI.scaleFactor
+                    }
+                }
+            ]/*[
                 Shape {
                     ShapePath {
                         capStyle: ShapePath.RoundCap
@@ -259,7 +287,7 @@ Window {
                         }
                     }
                 }
-            ]
+            ]*/
 
             onEntered: () => {
                 if (!spatialUI.dragging) {
@@ -271,13 +299,8 @@ Window {
                     spatialUI.cursor = Qt.ArrowCursor;
                 }
             }
-            onPositionChanged: mouse => {
-                spatialUI.drag(mouse.x * spatialUI.scaleFactor + spatialUI.contentItem.parent.x, mouse.y * spatialUI.scaleFactor + spatialUI.contentItem.parent.y);
-            }
-            onPressed: mouse => {
-                const pos = Qt.vector2d(mouse.x + spatialUI.contentItem.parent.x, mouse.y + spatialUI.contentItem.parent.y);
-                spatialUI.startDrag(pos);
-            }
+            onPositionChanged: (x, y, mouse) => spatialUI.drag(x, y)
+            onPressed: (x, y, mouse) => spatialUI.startDrag(x, y)
             onReleased: () => spatialUI.endDrag()
 
             Rectangle {
@@ -407,6 +430,7 @@ Window {
 
             onPositionChanged: mouse => {
                 if (spatialUI.dragging) {
+                    console.log('world;' + mouse.x, mouse.y);
                     spatialUI.drag(mouse.x, mouse.y);
                     mouse.accepted = true;
                 }

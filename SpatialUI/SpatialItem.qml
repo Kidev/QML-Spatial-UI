@@ -26,7 +26,7 @@ Item {
     property vector2d offsetLinkEnd2D: Qt.vector2d(0, 0)
     property vector3d offsetLinkStart: Qt.vector3d(0, 0, 0)
     property vector2d offsetLinkStart2D: Qt.vector2d(0, 0)
-    readonly property real scaleFactor: root.distanceFactor
+    property real scaleFactor: 1.0
     property vector2d screenTarget
     property vector2d screenTargetCenterBase
     property vector2d screenTargetCenterBaseOffseted
@@ -50,9 +50,9 @@ Item {
     signal doubleClicked(var mouse)
     signal entered
     signal exited
-    signal positionChanged(var mouse)
+    signal positionChanged(var x, var y, var mouse)
     signal pressAndHold(var mouse)
-    signal pressed(var mouse)
+    signal pressed(var x, var y, var mouse)
     signal released(var mouse)
     signal wheel(var wheel)
 
@@ -61,6 +61,7 @@ Item {
         root.zDistance = root.zOffset - Math.round(distance);
         const fov = root.camera.fieldOfView * Math.PI / 180.0;
         let perspectiveScale = (Window.height / distance) * (1 / Math.tan(fov / 2));
+        root.distanceFactor = perspectiveScale;
         if (root.fixedSize) {
             if (root.closeUpScaling) {
                 perspectiveScale = Math.max(1.0, perspectiveScale);
@@ -68,7 +69,7 @@ Item {
                 perspectiveScale = 1.0;
             }
         }
-        root.distanceFactor = perspectiveScale;
+        root.scaleFactor = perspectiveScale;
     }
 
     function updateSceneProjection() {
@@ -184,9 +185,6 @@ Item {
         Item {
             id: contentItem
 
-            readonly property alias relativeX: contentItemContainer.x
-            readonly property alias relativeY: contentItemContainer.y
-
             anchors.centerIn: parent
             height: root.size.height
             width: root.size.width
@@ -212,10 +210,14 @@ Item {
                 onClicked: mouse => root.clicked(mouse)
                 onDoubleClicked: mouse => root.doubleClicked(mouse)
                 onPositionChanged: mouse => {
-                    root.positionChanged(mouse);
+                    //root.positionChanged(mouse.x * root.scaleFactor + contentItemContainer.x, mouse.y * root.scaleFactor + contentItemContainer.y, mouse);
+                    const mapped = mapToItem(root, mouse.x, mouse.y);
+                    root.positionChanged(mapped.x + root.sizeScaled.x / 2, mapped.y + root.sizeScaled.y / 2, mouse);
                 }
                 onPressAndHold: mouse => root.pressAndHold(mouse)
-                onPressed: mouse => root.pressed(mouse)
+                onPressed: mouse => {
+                    root.pressed(mouse.x, mouse.y, mouse);
+                }
                 onReleased: mouse => root.released(mouse)
                 onWheel: wheel => {
                     root.wheel(wheel);
@@ -239,6 +241,7 @@ Item {
         width: linkerShape.boundingRect.width
         x: linkerShape.boundingRect.x
         y: linkerShape.boundingRect.y
+        z: root.stackingOrderLinker
 
         MouseArea {
             id: linkerMouseArea
@@ -248,16 +251,18 @@ Item {
             enabled: root.mouseLinkerEnabled
             hoverEnabled: root.hoverEnabled
             propagateComposedEvents: true
-            z: root.stackingOrderLinker + 1
 
             onCanceled: () => root.canceled()
             onClicked: mouse => root.clicked(mouse)
             onDoubleClicked: mouse => root.doubleClicked(mouse)
             onPositionChanged: mouse => {
-                root.positionChanged(mouse);
+                const mapped = mapToItem(root, mouse.x, mouse.y);
+                root.positionChanged(mapped.x + root.sizeScaled.x, mapped.y + root.sizeScaled.y, mouse);
             }
             onPressAndHold: mouse => root.pressAndHold(mouse)
-            onPressed: mouse => root.pressed(mouse)
+            onPressed: mouse => {
+                root.pressed(mouse.x, mouse.y, mouse);
+            }
             onReleased: mouse => root.released(mouse)
             onWheel: wheel => {
                 root.wheel(wheel);
