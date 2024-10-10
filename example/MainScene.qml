@@ -346,7 +346,7 @@ Window {
                 Text {
                     anchors.centerIn: parent
                     color: "black"
-                    font.pixelSize: 15.0
+                    font.pixelSize: 13.0
                     horizontalAlignment: Text.AlignHCenter
                     text: !spatialNameTag.textClicked ? "You spin me right 'round\nbaby, right 'round\n" : "Like a record, baby\nright 'round, 'round, 'round"
                     verticalAlignment: Text.AlignVCenter

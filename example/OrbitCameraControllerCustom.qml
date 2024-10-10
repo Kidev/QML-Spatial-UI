@@ -1,6 +1,6 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
-// Adapted to add configurable panning keys and
+// Adapted to add configurable panning keys and more controls
 
 import QtQuick
 import QtQuick3D
@@ -23,23 +23,12 @@ Item {
     property bool yInvert: true
     property real ySpeed: 0.1
 
-    signal canceled(eventPoint point)
-    signal grabChanged(int transition, eventPoint point)
-    signal mouseMovedDragging(vector2d position, vector2d last)
-    signal mousePressed(vector2d position)
-    signal mouseReleased(vector2d position)
-    signal panEnded
-    signal panStarted(vector2d position)
-    signal panUpdated(vector2d position)
-
     function _endPan() {
         status.isPanning = false;
-        root.panEnded();
     }
 
     function _mouseMoved(newPos: vector2d) {
         status.currentPos = newPos;
-        root.mouseMovedDragging(newPos, status.lastPos);
     }
 
     function _mousePressed(newPos) {
@@ -47,24 +36,24 @@ Item {
         status.currentPos = newPos;
         status.lastPos = newPos;
         status.useMouse = true;
-        root.mousePressed(newPos);
     }
 
     function _mouseReleased(newPos) {
         status.useMouse = false;
-        root.mouseReleased(newPos);
     }
 
     function _panEvent(newPos: vector2d) {
         status.currentPanPos = newPos;
-        root.panUpdated(newPos);
+    }
+
+    function _panEventDelta(delta: vector2d) {
+        status.currentPanPos = delta.plus(status.lastPanPos);
     }
 
     function _startPan(pos: vector2d) {
         status.isPanning = true;
         status.currentPanPos = pos;
         status.lastPanPos = pos;
-        root.panStarted(pos);
     }
 
     implicitHeight: parent.height
@@ -106,11 +95,9 @@ Item {
             else
                 root._mouseReleased(Qt.vector2d(centroid.position.x, centroid.position.y));
         }
-        onCanceled: point => root.canceled(point)
         onCentroidChanged: {
             root._mouseMoved(Qt.vector2d(centroid.position.x, centroid.position.y), false);
         }
-        onGrabChanged: (transition, point) => root.grabChanged(transition, point)
     }
 
     DragHandler {
@@ -127,11 +114,9 @@ Item {
             else
                 root._endPan();
         }
-        onCanceled: point => root.canceled(point)
         onCentroidChanged: {
             root._panEvent(Qt.vector2d(centroid.position.x, centroid.position.y));
         }
-        onGrabChanged: (transition, point) => root.grabChanged(transition, point)
     }
 
     PinchHandler {
