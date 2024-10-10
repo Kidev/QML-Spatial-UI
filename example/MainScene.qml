@@ -234,6 +234,7 @@ Window {
             forceTopStacking: spatialUI.hovered || spatialUI.dragging
             hoverEnabled: true
             mouseEnabled: true
+            mouseLinkerEnabled: true
             offsetLinkEnd: Qt.vector3d(0, 150, 50)
             offsetLinkEnd2D: Qt.vector2d(0, 0)
             offsetLinkStart: Qt.vector3d(0, 50, 0)
@@ -262,12 +263,12 @@ Window {
 
             onEntered: () => {
                 if (!spatialUI.dragging) {
-                    spatialUI.mouseArea.cursorShape = Qt.OpenHandCursor;
+                    spatialUI.cursor = Qt.OpenHandCursor;
                 }
             }
             onExited: () => {
                 if (!spatialUI.dragging) {
-                    spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
+                    spatialUI.cursor = Qt.ArrowCursor;
                 }
             }
             onPositionChanged: mouse => {
@@ -373,8 +374,8 @@ Window {
             ]
 
             onClicked: () => spatialNameTag.textClicked = !spatialNameTag.textClicked
-            onEntered: () => spatialNameTag.mouseArea.cursorShape = Qt.PointingHandCursor
-            onExited: () => spatialNameTag.mouseArea.cursorShape = Qt.ArrowCursor
+            onEntered: () => spatialNameTag.cursor = Qt.PointingHandCursor
+            onExited: () => spatialNameTag.cursor = Qt.ArrowCursor
 
             Rectangle {
                 id: uiRectangle

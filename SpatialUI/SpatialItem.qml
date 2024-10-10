@@ -8,13 +8,14 @@ Item {
     required property PerspectiveCamera camera
     property bool closeUpScaling: false
     readonly property alias contentItem: contentItem
+    property int cursor: Qt.ArrowCursor
     default property alias data: contentItem.data
     property bool depthTest: false
     property real distanceFactor: 1.0
     property bool fixedSize: false
     property bool forceTopStacking: false
     property bool hoverEnabled: false
-    property bool hovered: false
+    readonly property bool hovered: itemMouseArea.containsMouse || linkerMouseArea.containsMouse
     property alias linker: linkerShape.data
     readonly property vector2d linkerEnd: root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D)
     readonly property vector2d linkerStart: root.screenTargetCenterBaseOffseted.plus(root.offsetLinkStart2D)
@@ -97,7 +98,14 @@ Item {
 
     Component.onCompleted: () => root.updateSceneProjection()
     onFixedSizeChanged: () => root.updateDistanceFactor()
-    onHoveredChanged: () => root.updateSceneProjection()
+    onHoveredChanged: () => {
+        if (root.hovered) {
+            root.entered();
+        } else {
+            root.exited();
+        }
+        root.updateSceneProjection();
+    }
 
     Connections {
         function onScenePositionChanged() {
@@ -194,6 +202,7 @@ Item {
                 id: itemMouseArea
 
                 anchors.fill: contentItem
+                cursorShape: root.cursor
                 enabled: root.mouseEnabled
                 hoverEnabled: root.hoverEnabled
                 propagateComposedEvents: true
@@ -202,14 +211,6 @@ Item {
                 onCanceled: () => root.canceled()
                 onClicked: mouse => root.clicked(mouse)
                 onDoubleClicked: mouse => root.doubleClicked(mouse)
-                onEntered: () => {
-                    root.hovered = true;
-                    root.entered();
-                }
-                onExited: () => {
-                    root.hovered = false;
-                    root.exited();
-                }
                 onPositionChanged: mouse => {
                     root.positionChanged(mouse);
                 }
@@ -243,6 +244,7 @@ Item {
             id: linkerMouseArea
 
             anchors.fill: linkerShapeItem
+            cursorShape: root.cursor
             enabled: root.mouseLinkerEnabled
             hoverEnabled: root.hoverEnabled
             propagateComposedEvents: true
@@ -251,14 +253,6 @@ Item {
             onCanceled: () => root.canceled()
             onClicked: mouse => root.clicked(mouse)
             onDoubleClicked: mouse => root.doubleClicked(mouse)
-            onEntered: () => {
-                root.hovered = true;
-                root.entered();
-            }
-            onExited: () => {
-                root.hovered = false;
-                root.exited();
-            }
             onPositionChanged: mouse => {
                 root.positionChanged(mouse);
             }
