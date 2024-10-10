@@ -162,7 +162,6 @@ Window {
             property vector3d initialTargetPosition
 
             function drag(x: real, y: real) {
-                console.log(x + ' ' + y);
                 if (spatialUI.dragging) {
                     spatialUI.mouseArea.cursorShape = Qt.DragMoveCursor;
                     const currentPos = Qt.vector2d(x, y);
