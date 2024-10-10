@@ -165,7 +165,7 @@ Window {
                 if (spatialUI.dragging) {
                     spatialUI.mouseArea.cursorShape = Qt.DragMoveCursor;
                     const currentPos = Qt.vector2d(x, y);
-                    const adjustedMousePosition = currentPos.minus(spatialUI.linkerEnd.minus(spatialUI.linkerStart)).minus(spatialUI.firstPos);
+                    const adjustedMousePosition = currentPos.minus(spatialUI.linkerEnd.minus(spatialUI.linkerStart)).minus(spatialUI.firstPos.times(spatialUI.scaleFactor));
                     const pickResults = view3D.pickAll(adjustedMousePosition.x, adjustedMousePosition.y);
                     for (var i = 0; i < pickResults.length; i++) {
                         let pickResult = pickResults[i];
@@ -233,7 +233,7 @@ Window {
                 }
             }
             onPositionChanged: mouse => {
-                spatialUI.drag(mouse.x + spatialUI.contentItem.parent.x, mouse.y + spatialUI.contentItem.parent.y);
+                spatialUI.drag(mouse.x * spatialUI.scaleFactor + spatialUI.contentItem.parent.x, mouse.y * spatialUI.scaleFactor + spatialUI.contentItem.parent.y);
             }
             onPressed: mouse => {
                 const pos = Qt.vector2d(mouse.x + spatialUI.contentItem.parent.x, mouse.y + spatialUI.contentItem.parent.y);
