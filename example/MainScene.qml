@@ -98,15 +98,6 @@ Window {
             mouseEnabled: !spatialUI.dragging
             origin: originNode
             panEnabled: true
-
-            // onCanceled: point => console.log(`onCanceled(${point})`)
-            // onGrabChanged: (transition, point) => console.log(`onGrabChanged(${transition})(${point})`)
-            // onMouseMovedDragging: (position, last) => console.log(`onMouseMovedDragging(${position})(${last})`)
-            // onMousePressed: position => console.log(`onMousePressed(${position})`)
-            // onMouseReleased: position => console.log(`onMouseReleased(${position})`)
-            // onPanEnded: () => console.log(`onPanEnded()`)
-            // onPanStarted: position => console.log(`onPanStarted(${position})`)
-            // onPanUpdated: position => console.log(`onPanUpdated(${position})`)
         }
 
         Model {
@@ -167,20 +158,19 @@ Window {
 
             property string altText: ""
             property bool dragging: false
+            property vector2d firstPos
             property vector3d initialTargetPosition
-            property vector2d lastPos
-            property vector2d offsetFactors
 
             function drag(x: real, y: real) {
+                console.log(x + ' ' + y);
                 if (spatialUI.dragging) {
                     spatialUI.mouseArea.cursorShape = Qt.DragMoveCursor;
                     const currentPos = Qt.vector2d(x, y);
-                    const adjustedMousePosition = currentPos.plus(spatialUI.lastPos.minus(spatialUI.linkerEnd)).minus(spatialUI.sizeScaled.times(spatialUI.offsetFactors));
+                    const adjustedMousePosition = currentPos.minus(spatialUI.linkerEnd.minus(spatialUI.linkerStart)).minus(spatialUI.firstPos);
                     const pickResults = view3D.pickAll(adjustedMousePosition.x, adjustedMousePosition.y);
                     for (var i = 0; i < pickResults.length; i++) {
                         let pickResult = pickResults[i];
                         if (pickResult.objectHit.objectName === "raycastPlane") {
-                            spatialUI.lastPos = adjustedMousePosition;
                             spatialUI.altText = `${+(pickResult.scenePosition.x).toFixed(1)}`.padStart(7) + ' ; ' + `${+(pickResult.scenePosition.z).toFixed(1)}`.padEnd(7);
                             spatialUI.target.position = Qt.vector3d(pickResult.scenePosition.x, spatialUI.initialTargetPosition.y, pickResult.scenePosition.z);
                             break;
@@ -200,7 +190,7 @@ Window {
             }
 
             function startDrag(pos: vector2d) {
-                spatialUI.lastPos = pos.minus(spatialUI.linkerEnd.minus(spatialUI.linkerStart)).minus(spatialUI.sizeScaled.times(spatialUI.offsetFactors));
+                spatialUI.firstPos = pos.minus(Qt.vector2d(spatialUI.contentItem.relativeX, spatialUI.contentItem.relativeY));
                 spatialUI.initialTargetPosition = spatialUI.target.position;
                 spatialUI.dragging = true;
                 spatialUI.mouseArea.cursorShape = Qt.ClosedHandCursor;
@@ -226,7 +216,7 @@ Window {
                 startX: spatialUI.linkerStart.x
                 startY: spatialUI.linkerStart.y
                 strokeColor: spatialUI.hovered || spatialUI.dragging ? "black" : "white"
-                strokeWidth: 4
+                strokeWidth: 3 * spatialUI.scaleFactor
 
                 PathLine {
                     x: spatialUI.linkerEnd.x
@@ -244,10 +234,11 @@ Window {
                     spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
                 }
             }
-            onPositionChanged: mouse => spatialUI.drag(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y)
+            onPositionChanged: mouse => {
+                spatialUI.drag(mouse.x + spatialUI.contentItem.parent.x, mouse.y + spatialUI.contentItem.parent.y);
+            }
             onPressed: mouse => {
-                const pos = Qt.vector2d(mouse.x + spatialUI.contentItem.x, mouse.y + spatialUI.contentItem.y);
-                spatialUI.offsetFactors = (Qt.vector2d(mouse.x, mouse.y).minus(Qt.vector2d(spatialUI.sizeScaled.x / 2, spatialUI.sizeScaled.y / 2))).times(Qt.vector2d(1 / spatialUI.sizeScaled.x, 1 / spatialUI.sizeScaled.y));
+                const pos = Qt.vector2d(mouse.x + spatialUI.contentItem.parent.x, mouse.y + spatialUI.contentItem.parent.y);
                 spatialUI.startDrag(pos);
             }
             onReleased: () => spatialUI.endDrag()
@@ -361,15 +352,6 @@ Window {
                     text: !spatialNameTag.textClicked ? "You spin me right 'round\nbaby, right 'round\n" : "Like a record, baby\nright 'round, 'round, 'round"
                     verticalAlignment: Text.AlignVCenter
                 }
-
-                // Rectangle {
-                //     anchors.bottom: uiRectangle.bottom
-                //     anchors.bottomMargin: -1
-                //     anchors.horizontalCenter: uiRectangle.horizontalCenter
-                //     color: "white"
-                //     height: uiRectangle.border.width * 2
-                //     width: (0.2 * uiRectangle.width)
-                // }
             }
         }
 

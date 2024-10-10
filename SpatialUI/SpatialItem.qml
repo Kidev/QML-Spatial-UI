@@ -16,7 +16,7 @@ Item {
     property bool hoverEnabled: false
     property bool hovered: false
     property alias linker: linkerShape.data
-    readonly property vector2d linkerEnd: Qt.vector2d(root.targetLinkEndOffset.x + (root.contentItem.width / 2), root.targetLinkEndOffset.y + (root.contentItem.height / 2))
+    readonly property vector2d linkerEnd: Qt.vector2d(root.targetLinkEndOffset.x + (root.size.width * root.scaleFactor / 2), root.targetLinkEndOffset.y + (root.size.height * root.scaleFactor / 2))
     readonly property vector2d linkerStart: Qt.vector2d(root.targetLinkStartOffset.x, root.targetLinkStartOffset.y)
     property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
@@ -155,45 +155,56 @@ Item {
     }
 
     Item {
-        id: contentItem
+        id: contentItemContainer
 
-        height: root.size.height
-        width: root.size.width
-        x: root.targetLinkEndOffset.x
-        y: root.targetLinkEndOffset.y
+        x: root.targetLinkEndOffset.x + root.sizeScaled.x / 2
+        y: root.targetLinkEndOffset.y + root.sizeScaled.y / 2
 
-        transform: Scale {
-            origin.x: contentItem.width / 2
-            origin.y: contentItem.height / 2
-            xScale: root.scaleFactor
-            yScale: root.scaleFactor
-        }
+        Item {
+            id: contentItem
 
-        MouseArea {
-            id: itemMouseArea
+            readonly property alias relativeX: contentItemContainer.x
+            readonly property alias relativeY: contentItemContainer.y
 
-            anchors.fill: contentItem
-            enabled: root.mouseEnabled
-            hoverEnabled: root.hoverEnabled
-            propagateComposedEvents: true
-            z: root.z + 1
+            anchors.centerIn: parent
+            height: root.size.height
+            width: root.size.width
 
-            onCanceled: () => root.canceled()
-            onClicked: mouse => root.clicked(mouse)
-            onDoubleClicked: mouse => root.doubleClicked(mouse)
-            onEntered: () => {
-                root.hovered = true;
-                root.entered();
+            transform: Scale {
+                origin.x: contentItem.width / 2
+                origin.y: contentItem.height / 2
+                xScale: root.scaleFactor
+                yScale: root.scaleFactor
             }
-            onExited: () => {
-                root.hovered = false;
-                root.exited();
+
+            MouseArea {
+                id: itemMouseArea
+
+                anchors.fill: contentItem
+                enabled: root.mouseEnabled
+                hoverEnabled: root.hoverEnabled
+                propagateComposedEvents: true
+                z: root.z + 1
+
+                onCanceled: () => root.canceled()
+                onClicked: mouse => root.clicked(mouse)
+                onDoubleClicked: mouse => root.doubleClicked(mouse)
+                onEntered: () => {
+                    root.hovered = true;
+                    root.entered();
+                }
+                onExited: () => {
+                    root.hovered = false;
+                    root.exited();
+                }
+                onPositionChanged: mouse => {
+                    root.positionChanged(mouse);
+                }
+                onPressAndHold: mouse => root.pressAndHold(mouse)
+                onPressed: mouse => root.pressed(mouse)
+                onReleased: mouse => root.released(mouse)
+                onWheel: wheel => root.wheel(wheel)
             }
-            onPositionChanged: mouse => root.positionChanged(mouse)
-            onPressAndHold: mouse => root.pressAndHold(mouse)
-            onPressed: mouse => root.pressed(mouse)
-            onReleased: mouse => root.released(mouse)
-            onWheel: wheel => root.wheel(wheel)
         }
     }
 
