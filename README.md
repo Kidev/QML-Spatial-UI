@@ -101,38 +101,35 @@ QML Spatial UI is a QtQuick3D component designed for creating interactive and dy
     }
     ```
   </details>
-
+  
+- **cursor [int]**: Set the appearance of the mouse cursor above the items and linkers. Defaults to Qt.ArrowCursor.
+- **mouseLinkerEnabled [bool]**: If true, the linker also sends mouse and touch events. Defaults to false.
 - **fixedSize [bool]**: If true, the overlay UI will maintain a constant size on the screen regardless of distance to the camera. Defaults to false.
-
 - **closeUpScaling [bool]**: If true and if fixedSize is true, then the size will be allowed to grow to accommodate close camera proximity. The fixed size hence becomes a minimum screen size. Defaults to false.
-
 - **depthTest [bool]**: If true, then the 2D items will order themselves as if they were in 3D space: if the camera is closer to a target than another, its UI will be displayed on top. Defaults to false.
-
 - **forceTopStacking [bool]**: If true, then the 2D items of this SpatialItem will be placed on top of their siblings. This is useful for bindings such as hovering. If multiple siblings have this set to true, they will be displayed in the order they appear in the code. Defaults to false.
-
 - **hoverEnabled [bool]**: Determines if the overlay UI can react to hover events. If true, the `entered()` and `exited()` signals will be emitted when the mouse enters or leaves the item. Defaults to false.
-
 - **mouseEnabled [bool]**: If true, the overlay UI will respond to mouse events such as clicks, enabling the `clicked()` signal. Defaults to false.
-
 - **offsetLinkEnd [vector3d]**: An offset applied to the position of the target model in 3D space. This adjusts the relative position of the overlay UI for better alignment with the 3D target. Defaults to `Qt.vector3d(0, 0, 0)`.
-
 - **offsetLinkStart [vector3d]**: An offset applied to the position of the target model in 3D space. This adjusts the relative position of the start of the linker for better alignment with the 3D target. Defaults to `Qt.vector3d(0, 0, 0)`.
-
+- **offsetLinkEnd2D [vector2d]**: An offset applied to the position of the target model in screen space. This adjusts the relative position of the overlay UI. Defaults to `Qt.vector2d(0, 0, 0)`.
+- **offsetLinkStart2D [vector2d]**: An offset applied to the position of the target model in screen space. This adjusts the relative position of the start of the linker. Defaults to `Qt.vector2d(0, 0, 0)`.
 - **showLinker [bool]**: If true, the shape defined by the `linker` property will be drawn, connecting the UI overlay to the target model to visually indicate the relationship. Defaults to false.
-
 - **stackingOrder [real]**: The z-value of the contents of the UI. It competes with all its other siblings only and is active only if `depthTest` is false. Defaults to 0.
-
 - **stackingOrderLinker [real]**: The z-value of the linker shape. As a child of the UI, it only competes with it and can be placed behind using -1. Defaults to -1.
 
 ### Read-only Data
 
 - **hovered [bool]**: Indicates whether the overlay UI is currently being hovered by the mouse cursor.
-
 - **linkerEnd [vector2d]**: Represents the endpoint of the linker line in screen space, connected to the center of the overlay UI.
-
 - **linkerStart [vector2d]**: Represents the starting point of the linker line in screen space, connected to the target model's projected position.
-
 - **scaleFactor [real]**: A scaling factor used to adjust the size of the overlay UI based on the distance between the camera and the target. This ensures that the overlay appears to have a fixed size in 3D space, despite changes in perspective. Use it to scale font sizes, stroke width, etc.
+- **sizeScaled [vector2d]**: It is a scaled by the scaleFactor version of the `size` property, turned into a `vector2d` for ease of use.
+- **screenTarget [vector2d]**: The coordinates in screen space of the target.
+- **screenTargetCenterBase [vector2d]**: The coordinates in screen space of the target center of mass projected on its base (y).
+- **screenTargetCenterBaseOffseted [vector2d]**: The offsetted by `offsetLinkStart` coordinates in screen space of the target center of mass projected on its base (y).
+- **screenTargetCenterTop [vector2d]**: The coordinates in screen space of the target center of mass projected on its top (y).
+- **screenTargetCenterTopOffseted [vector2d]**: The offsetted by `offsetLinkEnd` coordinates in screen space of the target center of mass projected on its top (y).
 
 ### Signals and Aliases
 
@@ -142,13 +139,15 @@ Signals available:
 - `doubleClicked(MouseEvent mouse)`
 - `entered()`
 - `exited()`
-- `positionChanged(MouseEvent mouse)`
+- `positionChanged(real x, real y, MouseEvent mouse)`
 - `pressAndHold(MouseEvent mouse)`
-- `pressed(MouseEvent mouse)`
+- `pressed(real x, real y, MouseEvent mouse)`
 - `released(MouseEvent mouse)`
 - `wheel(WheelEvent wheel)`
 
-The MouseArea whose signals are re-shared by the SpatialItem can be accessed freely using the `mouseArea` property alias of SpatialItem.
+Aliases:
+- **mouseArea [MouseArea]**: The MouseArea filling the items
+- **mouseAreaLinker [MouseArea]**: The MouseArea filling the linker
 
 ### Add to your project
 - Add the project as a submodule from your project root
@@ -241,20 +240,22 @@ Window {
             size: Qt.size(100, 50)
             target: targetModel
 
-            linker: ShapePath {
-                capStyle: ShapePath.RoundCap
-                joinStyle: ShapePath.BevelJoin
-                pathHints: ShapePath.PathLinear
-                startX: spatialUI.linkerStart.x
-                startY: spatialUI.linkerStart.y
-                strokeColor: spatialUI.hovered ? "black" : "white"
-                strokeWidth: 4 * spatialUI.scaleFactor
-
-                PathLine {
-                    x: spatialUI.linkerEnd.x
-                    y: spatialUI.linkerEnd.y
+            linker: [
+                ShapePath {
+                    capStyle: ShapePath.RoundCap
+                    joinStyle: ShapePath.BevelJoin
+                    pathHints: ShapePath.PathLinear
+                    startX: spatialUI.linkerStart.x
+                    startY: spatialUI.linkerStart.y
+                    strokeColor: spatialUI.hovered ? "black" : "white"
+                    strokeWidth: 4 * spatialUI.scaleFactor
+    
+                    PathLine {
+                        x: spatialUI.linkerEnd.x
+                        y: spatialUI.linkerEnd.y
+                    }
                 }
-            }
+            ]
 
             Rectangle {
                 anchors.fill: parent
@@ -294,7 +295,7 @@ This works on Linux, Windows and macOS for the architectures `gcc_64`, `clang_64
   - Set `QT_ROOT`, `QT_VERSION`, [`EMSDK_VERSION`](https://doc.qt.io/qt-6/wasm.html), `QT_HOST_ARCH` and `QT_TARGET_ARCH` to the appropriate values for your Qt installation and run: \
     `make web QT_ROOT="/opt/Qt" QT_VERSION="6.6.0" EMSDK_VERSION="3.1.37" QT_HOST_ARCH="gcc_64" QT_TARGET_ARCH="wasm_singlethread"`
 - You can use `make run` / `make run-web` to run the desktop version / to run the web version in your favorite browser.
-
+- If you use QtCreator, you may get the error `You need to set an executable in the custom run configuration`. To fix it, simply go to `Projects` on the left, select your kit, click on `Current Configuration` and make sure the option `BUILD_EXAMPLE` is ticked ON.
 
 ## Credits
 - [aaravanimates](https://free3d.com/user/aaravanimates) for the [human 3D model](https://free3d.com/3d-model/rigged-male-human-442626.html) of the example (Personal Use License)

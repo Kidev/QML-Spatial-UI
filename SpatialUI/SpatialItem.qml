@@ -20,6 +20,7 @@ Item {
     readonly property vector2d linkerEnd: root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D)
     readonly property vector2d linkerStart: root.screenTargetCenterBaseOffseted.plus(root.offsetLinkStart2D)
     property alias mouseArea: itemMouseArea
+    property alias mouseAreaLinker: linkerMouseArea
     property bool mouseEnabled: false
     property bool mouseLinkerEnabled: false
     property vector3d offsetLinkEnd: Qt.vector3d(0, 0, 0)
@@ -212,11 +213,11 @@ Item {
                 onPositionChanged: mouse => {
                     //root.positionChanged(mouse.x * root.scaleFactor + contentItemContainer.x, mouse.y * root.scaleFactor + contentItemContainer.y, mouse);
                     const mapped = mapToItem(root, mouse.x, mouse.y);
-                    root.positionChanged(mapped.x + root.sizeScaled.x / 2, mapped.y + root.sizeScaled.y / 2, mouse);
+                    root.positionChanged(mapped.x, mapped.y, mouse);
                 }
                 onPressAndHold: mouse => root.pressAndHold(mouse)
                 onPressed: mouse => {
-                    root.pressed(mouse.x, mouse.y, mouse);
+                    root.pressed(mouse.x + root.size.width / 2, mouse.y + root.size.height / 2, mouse);
                 }
                 onReleased: mouse => root.released(mouse)
                 onWheel: wheel => {
@@ -261,7 +262,7 @@ Item {
             }
             onPressAndHold: mouse => root.pressAndHold(mouse)
             onPressed: mouse => {
-                root.pressed(mouse.x, mouse.y, mouse);
+                root.pressed(mouse.x + root.sizeScaled.x / 2, mouse.y + root.sizeScaled.y, mouse);
             }
             onReleased: mouse => root.released(mouse)
             onWheel: wheel => {
