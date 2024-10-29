@@ -8,20 +8,25 @@ import QtQuick3D
 Item {
     id: root
 
+    readonly property real _pinchZoomFactor: 2 * root._scrollSpeed
     readonly property real _scrollSpeed: invertScroll ? -scrollSpeed : scrollSpeed
     readonly property vector2d _speedPanning: Qt.vector2d(xInvertPanning ? -xSpeedPanning : xSpeedPanning, yInvertPanning ? -ySpeedPanning : ySpeedPanning)
     readonly property real _xSpeed: xInvert ? -xSpeed : xSpeed
     readonly property real _ySpeed: yInvert ? -ySpeed : ySpeed
     property int buttonsToPan: Qt.RightButton
-    required property Camera camera
+    property Camera camera: root.view.camera
     readonly property bool inputsNeedProcessing: status.useMouse || status.isPanning
     property bool invertScroll: false
+    property bool isTracking: false
     property int modifiersToPan: Qt.NoModifier
     property bool mouseEnabled: true
     required property Node origin
     property bool panEnabled: true
-    property bool scrollEnabled: true
+    readonly property bool panning: status.isPanning
+    property real pinchZoomSpeed: 0.5
     property real scrollSpeed: 1
+    property var trackedModel: null
+    required property View3D view
     property bool xInvert: false
     property bool xInvertPanning: false
     property real xMaxAngle: 90
@@ -34,6 +39,7 @@ Item {
     property real yMinAngle: -361
     property real ySpeed: 0.1
     property real ySpeedPanning: 0.5
+    property bool zoomEnabled: true
 
     function _endPan() {
         status.isPanning = false;
@@ -63,54 +69,89 @@ Item {
     }
 
     function _startPan(pos: vector2d) {
+        isTracking = false;
+        trackedModel = null;
         status.isPanning = true;
         status.currentPanPos = pos;
         status.lastPanPos = pos;
     }
 
+    function _trackModel() {
+        if (root.isTracking && root.trackedModel) {
+            let bounds = root.trackedModel.bounds;
+            let baseCenter = root.trackedModel.scenePosition.plus(Qt.vector3d((bounds.minimum.x + bounds.maximum.x) / 2, bounds.minimum.y, (bounds.minimum.z + bounds.maximum.z) / 2));
+            baseCenter.y = 0;
+            root.view.camera.parent.position = baseCenter;
+        }
+    }
+
     implicitHeight: parent.height
     implicitWidth: parent.width
 
-    Connections {
-        function onZChanged() {
-            // Adjust near/far values based on distance
-            let distance = root.camera.z;
-            if (distance < 1) {
-                root.camera.clipNear = 0.01;
-                root.camera.clipFar = 100;
-                if (camera.z === 0) {
-                    console.warn("camera z set to 0, setting it to near clip");
-                    root.camera.z = camera.clipNear;
-                }
-            } else if (distance < 100) {
-                root.camera.clipNear = 0.1;
-                root.camera.clipFar = 1000;
-            } else {
-                root.camera.clipNear = 1;
-                root.camera.clipFar = 10000;
-            }
-        }
+    PropertyAnimation {
+        id: restoreZoomAnimation
 
+        duration: 500
+        property: "z"
+        running: false
         target: root.camera
+        to: 2000
     }
 
+    Connections {
+        function onScenePositionChanged() {
+            root._trackModel();
+        }
+
+        target: root.trackedModel
+    }
+
+    // Double tap/click to select/unselect object
     TapHandler {
-        onTapped: () => root.forceActiveFocus()
+        id: doubleTapHandler
+
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchScreen
+        enabled: root.mouseEnabled
+        exclusiveSignals: TapHandler.DoubleTap
+        gesturePolicy: TapHandler.WithinBounds
+        target: null
+
+        onDoubleTapped: (eventPoint, button) => {
+            let pickResult = root.view.pick(eventPoint.position.x, eventPoint.position.y);
+            if (pickResult.objectHit) {
+                let hitModel = pickResult.objectHit;
+                if (root.isTracking) {
+                    if (hitModel === root.trackedModel || hitModel !== root.trackedModel) {
+                        root.isTracking = false;
+                        root.trackedModel = null;
+                    }
+                } else if (!hitModel.objectName.startsWith("notSelectable")) {
+                    root.trackedModel = hitModel;
+                    root.isTracking = true;
+                    root._trackModel();
+                }
+            } else {
+                root.isTracking = false;
+                root.trackedModel = null;
+            }
+        }
     }
 
     // Mouse rotation
     DragHandler {
         id: moveDragHandler
 
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         acceptedModifiers: Qt.NoModifier
         enabled: root.mouseEnabled
         target: null
 
         onActiveChanged: {
-            if (active)
+            if (active) {
                 root._mousePressed(Qt.vector2d(centroid.position.x, centroid.position.y));
-            else
+            } else {
                 root._mouseReleased(Qt.vector2d(centroid.position.x, centroid.position.y));
+            }
         }
         onCentroidChanged: {
             root._mouseMoved(Qt.vector2d(centroid.position.x, centroid.position.y), false);
@@ -122,76 +163,19 @@ Item {
         id: panDragHandler
 
         acceptedButtons: root.buttonsToPan
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         acceptedModifiers: root.modifiersToPan
         enabled: root.mouseEnabled && root.panEnabled
         target: null
 
         onActiveChanged: {
-            if (active)
-                root._startPan(Qt.vector2d(centroid.position.x, centroid.position.y));
-            else
-                root._endPan();
-        }
-        onCentroidChanged: {
-            root._panEvent(Qt.vector2d(centroid.position.x, centroid.position.y));
-        }
-    }
-
-    // Mobile rotation
-    PinchHandler {
-        id: movePinchHandler
-
-        acceptedDevices: PointerDevice.TouchScreen
-        acceptedModifiers: Qt.NoModifier
-        enabled: root.mouseEnabled
-        maximumPointCount: 1
-        minimumPointCount: 1
-        target: null
-
-        onActiveChanged: {
-            if (active)
-                root._mousePressed(Qt.vector2d(centroid.position.x, centroid.position.y));
-            else
-                root._mouseReleased(Qt.vector2d(centroid.position.x, centroid.position.y));
-        }
-        onCentroidChanged: {
-            root._mouseMoved(Qt.vector2d(centroid.position.x, centroid.position.y), false);
-        }
-    }
-
-    // Mobile zoom
-    PinchHandler {
-        id: pinchHandlerZoom
-
-        property real distance: active ? root.camera.z : 0.0
-
-        enabled: root.scrollEnabled
-        maximumPointCount: 2
-        minimumPointCount: 2
-        target: null
-
-        onScaleChanged: () => {
-            root.camera.z = distance * root._scrollSpeed * (1 / scale);
-        }
-    }
-
-    // Mobile pan
-    PinchHandler {
-        id: pinchHandler
-
-        enabled: root.mouseEnabled
-        maximumPointCount: 2
-        minimumPointCount: 2
-        target: null
-
-        onActiveChanged: () => {
             if (active) {
                 root._startPan(Qt.vector2d(centroid.position.x, centroid.position.y));
             } else {
                 root._endPan();
             }
         }
-        onCentroidChanged: () => {
+        onCentroidChanged: {
             root._panEvent(Qt.vector2d(centroid.position.x, centroid.position.y));
         }
     }
@@ -201,7 +185,7 @@ Item {
         id: wheelHandler
 
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-        enabled: root.scrollEnabled
+        enabled: root.zoomEnabled
         orientation: Qt.Vertical
         target: null
 
@@ -211,9 +195,85 @@ Item {
         }
     }
 
-    FrameAnimation {
-        id: updateTimer
+    // Single finger rotation
+    DragHandler {
+        id: rotationHandler
 
+        acceptedDevices: PointerDevice.TouchScreen
+        acceptedModifiers: Qt.NoModifier
+        enabled: root.mouseEnabled
+        maximumPointCount: 1
+        minimumPointCount: 1
+        target: null
+
+        onActiveChanged: {
+            if (rotationHandler.active) {
+                root._mousePressed(Qt.vector2d(rotationHandler.centroid.position.x, rotationHandler.centroid.position.y));
+            } else {
+                root._mouseReleased(Qt.vector2d(rotationHandler.centroid.position.x, rotationHandler.centroid.position.y));
+            }
+        }
+        onCentroidChanged: {
+            if (rotationHandler.active) {
+                root._mouseMoved(Qt.vector2d(rotationHandler.centroid.position.x, rotationHandler.centroid.position.y));
+            }
+        }
+    }
+
+    // Double finger pinch zoom
+    PinchHandler {
+        id: pinchHandler
+
+        property real zoomThreshold: 0.025
+
+        enabled: root.zoomEnabled
+        scaleAxis.maximum: 20.0
+        scaleAxis.minimum: 0.01
+        target: null
+
+        onScaleChanged: delta => {
+            if (Math.abs(1 - delta) > zoomThreshold) {
+                let zoomFactor = 1 + (1 - delta) * root._pinchZoomFactor;
+                root.camera.z *= zoomFactor;
+            }
+        }
+    }
+
+    // Double+ finger pan
+    DragHandler {
+        id: touchPanHandler
+
+        property real lastCentroidX: 0
+        property real lastCentroidY: 0
+        property real panThreshold: 5
+
+        acceptedDevices: PointerDevice.TouchScreen
+        enabled: root.mouseEnabled && root.panEnabled
+        maximumPointCount: 3
+        minimumPointCount: 2
+        target: null
+
+        onActiveChanged: {
+            if (active) {
+                lastCentroidX = centroid.position.x;
+                lastCentroidY = centroid.position.y;
+                root._startPan(Qt.vector2d(centroid.position.x, centroid.position.y));
+            } else {
+                root._endPan();
+            }
+        }
+        onCentroidChanged: {
+            let deltaX = centroid.position.x - lastCentroidX;
+            let deltaY = centroid.position.y - lastCentroidY;
+            if (Math.abs(deltaX) > panThreshold || Math.abs(deltaY) > panThreshold) {
+                root._panEvent(Qt.vector2d(centroid.position.x, centroid.position.y));
+                lastCentroidX = centroid.position.x;
+                lastCentroidY = centroid.position.y;
+            }
+        }
+    }
+
+    FrameAnimation {
         running: root.inputsNeedProcessing
 
         onTriggered: status.processInput(frameTime * 100)

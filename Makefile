@@ -1,5 +1,5 @@
 QT_ROOT ?= "/opt/Qt"
-QT_VERSION ?= "6.7.3"
+QT_VERSION ?= "6.6.3"
 EMSDK_VERSION ?= "3.1.50"
 QT_ARCH ?= "gcc_64
 QT_HOST_ARCH ?= "gcc_64"

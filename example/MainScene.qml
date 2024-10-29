@@ -1,16 +1,23 @@
 import QtQuick
+import QtQuick.Window
+import QtQuick.Shapes
 import QtQuick3D
 import QtQuick3D.Helpers
-import QtQuick.Shapes
 import SpatialUI
 
 Window {
     id: root
 
-    height: 480
-    title: "SpatialUI Example"
+    height: 1000
+    title: "SpatialUI"
     visible: true
-    width: 640
+    width: 1000
+
+    Shortcut {
+        sequence: "Esc"
+
+        onActivated: Qt.exit(0)
+    }
 
     View3D {
         id: view3D
@@ -23,48 +30,114 @@ Window {
             antialiasingQuality: SceneEnvironment.High
             backgroundMode: SceneEnvironment.Color
             clearColor: theFog.color
-            fog: theFog
+
+            fog: Fog {
+                id: theFog
+
+                color: "black"
+                density: 0.99
+                depthEnabled: true
+                depthFar: 10000
+                depthNear: 7000
+                enabled: true
+            }
+        }
+
+        Model {
+            id: xAxis
+
+            position: Qt.vector3d(5000, 0, 0)
+            scale: Qt.vector3d(100, .05, .05)
+            source: "#Cube"
+
+            materials: DefaultMaterial {
+                diffuseColor: "red"
+                lighting: DefaultMaterial.NoLighting
+            }
+        }
+
+        Model {
+            id: zAxis
+
+            position: Qt.vector3d(0, 0, 5000)
+            scale: Qt.vector3d(0.05, 0.05, 100)
+            source: "#Cube"
+
+            materials: DefaultMaterial {
+                diffuseColor: "blue"
+                lighting: DefaultMaterial.NoLighting
+            }
+        }
+
+        SpotLight {
+            id: modelDynamicLight
+
+            function updateLight() {
+                const rayOrigin = perspectiveCamera.scenePosition;
+                const rayDirection = originNode.forward;
+                if (Math.abs(rayDirection.y) < 0.0001) {
+                    return;
+                }
+                const t = -rayOrigin.y / rayDirection.y;
+                if (t >= 0) {
+                    modelDynamicLight.x = rayOrigin.x + t * rayDirection.x;
+                    modelDynamicLight.y = 1000;
+                    modelDynamicLight.z = rayOrigin.z + t * rayDirection.z;
+                }
+            }
+
+            ambientColor: Qt.rgba(0.1, 0.1, 0.1, 1.0)
+            brightness: 1
+            castsShadow: true
+            coneAngle: orbitCameraController.isTracking ? 100 : 160
+            constantFade: 0
+            eulerRotation.x: -90
+            innerConeAngle: 0.9 * coneAngle
+            quadraticFade: 0.01
+            shadowFactor: 50
+            shadowMapQuality: Light.ShadowMapQualityHigh
+
+            Behavior on coneAngle {
+                SmoothedAnimation {
+                    duration: 250
+                }
+            }
         }
 
         PointLight {
-            id: modelDynamicLight
-
+            ambientColor: Qt.rgba(0.1, 0.1, 0.1, 1.0)
             brightness: 1
             castsShadow: true
             constantFade: 0
             quadraticFade: 0.01
             shadowFactor: 50
             shadowMapQuality: Light.ShadowMapQualityHigh
-            x: -200
-            y: 1000
-            z: 200
+            x: modelDynamicLight.x
+            y: modelDynamicLight.y
+            z: modelDynamicLight.z + 500
         }
 
-        Fog {
-            id: theFog
+        Model {
+            id: groundPlane
 
-            color: "black"
-            density: 0.99
-            depthEnabled: true
-            depthFar: 10000
-            depthNear: 7000
-            enabled: true
-        }
+            castsShadows: true
+            eulerRotation.x: -90
+            objectName: "notSelectable"
+            pickable: true
+            position: Qt.vector3d(0, 0, 0)
+            receivesShadows: true
+            scale: Qt.vector3d(1000, 1000, 1)
+            source: "#Rectangle"
 
-        AxisHelper {
-            enableAxisLines: false
-            enableXYGrid: false
-            enableXZGrid: true
-            enableYZGrid: false
-            gridColor: "#ffffff"
-            gridOpacity: 0.5
-            scale: Qt.vector3d(5, 1, 5)
+            materials: [
+                DefaultMaterial {
+                    diffuseColor: "grey"
+                }
+            ]
         }
 
         Node {
             id: originNode
-
-            eulerRotation: Qt.vector3d(0, 0, 0)
 
             PropertyAnimation on eulerRotation.x {
                 duration: 100
@@ -79,31 +152,38 @@ Window {
                 to: -45
             }
 
+            onEulerRotationChanged: {
+                modelDynamicLight.updateLight();
+            }
+            onPositionChanged: {
+                modelDynamicLight.updateLight();
+            }
+
             PerspectiveCamera {
                 id: perspectiveCamera
 
                 clipFar: 100000
+                clipNear: 1
                 fieldOfView: 45
                 position: Qt.vector3d(0, 0, 2000)
             }
         }
 
-        OrbitCameraControllerCustom {
+        SpatialOrbitController {
             id: orbitCameraController
 
             anchors.fill: parent
             buttonsToPan: Qt.RightButton
-            camera: perspectiveCamera
             invertScroll: false
             modifiersToPan: Qt.NoModifier
             mouseEnabled: !spatialUI.dragging
             origin: originNode
             panEnabled: true
-            scrollEnabled: true
             scrollSpeed: 0.5
+            view: view3D
             xInvert: false
             xInvertPanning: false
-            xMaxAngle: 90
+            xMaxAngle: -1
             xMinAngle: -90
             xSpeed: 0.1
             xSpeedPanning: 0.5
@@ -113,12 +193,14 @@ Window {
             yMinAngle: -361
             ySpeed: 0.1
             ySpeedPanning: 0.5
+            zoomEnabled: true
         }
 
         Model {
             id: targetModel
 
             castsShadows: true
+            pickable: true
             position: Qt.vector3d(0, 50, 0)
             receivesShadows: true
             source: "#Cube"
@@ -126,25 +208,6 @@ Window {
             materials: [
                 DefaultMaterial {
                     diffuseColor: "green"
-                }
-            ]
-        }
-
-        Model {
-            id: raycastPlane
-
-            castsShadows: true
-            eulerRotation.x: -90
-            objectName: "raycastPlane"
-            pickable: true
-            position: Qt.vector3d(0, -1, 0)
-            receivesShadows: true
-            scale: Qt.vector3d(1000, 1000, 1)
-            source: "#Rectangle"
-
-            materials: [
-                DefaultMaterial {
-                    diffuseColor: "grey"
                 }
             ]
         }
@@ -158,6 +221,7 @@ Window {
 
             castsShadows: true
             eulerRotation: Qt.vector3d(0, 0, 0)
+            pickable: true
             pivot: Qt.vector3d(-20, 0, 0)
             position: Qt.vector3d(100, 0, 0)
             receivesShadows: true
@@ -182,263 +246,197 @@ Window {
                 }
             ]
 
-            Component.onCompleted: () => eulerRotation.y = 360
+            Component.onCompleted: () => targetHuman.eulerRotation.y = 360
         }
+    }
 
-        SpatialItem {
-            id: spatialUI
+    SpatialItem {
+        id: spatialUI
 
-            property string altText: ""
-            property bool dragging: false
-            property vector2d firstPos
-            property vector3d initialTargetPosition
+        closeUpScaling: true
+        depthTest: true
+        fixedSize: spatialUI.hovered || spatialUI.dragging
+        forceTopStacking: spatialUI.hovered || spatialUI.dragging
+        holdDragsTarget: orbitCameraController.trackedModel != spatialUI.target
+        hoverEnabled: true
+        mouseEnabled: true
+        mouseLinkerEnabled: true
+        offsetLinkEnd: spatialUI.holdDragsTarget ? Qt.vector3d(0, 150, 50) : Qt.vector3d(-spatialUI.width * spatialUI.scaleFactor / 2, 150, -spatialUI.height * spatialUI.scaleFactor / 2)
+        offsetLinkEnd2D: Qt.vector2d(0, 0)
+        offsetLinkStart: Qt.vector3d(0, 50, 0)
+        offsetLinkStart2D: Qt.vector2d(0, 0)
+        showDraggingLine: true
+        showLinker: spatialUI.holdDragsTarget
+        size: Qt.size(100, 50)
+        target: targetModel
+        view: view3D
 
-            function drag(x: real, y: real) {
-                if (spatialUI.dragging) {
-                    spatialUI.cursor = Qt.DragMoveCursor;
-                    const currentPos = Qt.vector2d(x, y);
-                    const adjustedMousePosition = currentPos.minus(spatialUI.linkerEnd.minus(spatialUI.screenTargetCenterBase)).minus(spatialUI.firstPos.times(spatialUI.scaleFactor));
-                    const viewportX = adjustedMousePosition.x / view3D.width;
-                    const viewportY = adjustedMousePosition.y / view3D.height;
-                    const nearPoint = perspectiveCamera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
-                    const farPoint = perspectiveCamera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 1));
-                    const ray_start = nearPoint;
-                    const ray_direction = farPoint.minus(nearPoint).normalized();
-                    const plane_normal = Qt.vector3d(0, 1, 0);
-                    const plane_point = Qt.vector3d(0, 0, 0);
-                    const denominator = ray_direction.dotProduct(plane_normal);
-                    if (Math.abs(denominator) > 0.0001) {
-                        const t = plane_point.minus(ray_start).dotProduct(plane_normal) / denominator;
-                        if (t >= 0) {
-                            const intersection = ray_start.plus(ray_direction.times(t));
-                            spatialUI.altText = `${+intersection.x.toFixed(1)}`.padStart(7) + ' ; ' + `${+intersection.z.toFixed(1)}`.padEnd(7);
-                            spatialUI.target.position = Qt.vector3d(intersection.x, spatialUI.initialTargetPosition.y, intersection.z);
-                        }
-                    }
-                }
-            }
+        linker: Shape {
+            id: linkerLine
 
-            function endDrag() {
-                spatialUI.dragging = false;
-                spatialUI.altText = "";
-                if (spatialUI.mouseArea.containsMouse) {
-                    spatialUI.mouseArea.cursorShape = Qt.OpenHandCursor;
-                } else {
-                    spatialUI.mouseArea.cursorShape = Qt.ArrowCursor;
-                }
-            }
+            visible: spatialUI.holdDragsTarget
 
-            function startDrag(x: real, y: real) {
-                spatialUI.firstPos = Qt.vector2d(x, y);
-                spatialUI.initialTargetPosition = spatialUI.target.position;
-                spatialUI.dragging = true;
-                spatialUI.mouseArea.cursorShape = Qt.ClosedHandCursor;
-            }
+            ShapePath {
+                capStyle: ShapePath.RoundCap
+                joinStyle: ShapePath.BevelJoin
+                startX: spatialUI.linkerStart.x
+                startY: spatialUI.linkerStart.y
+                strokeColor: spatialUI.hovered || spatialUI.dragging ? "black" : "white"
+                strokeWidth: 3 * spatialUI.scaleFactor
 
-            camera: perspectiveCamera
-            closeUpScaling: true
-            depthTest: true
-            fixedSize: spatialUI.hovered || spatialUI.dragging
-            forceTopStacking: spatialUI.hovered || spatialUI.dragging
-            hoverEnabled: true
-            mouseEnabled: true
-            mouseLinkerEnabled: true
-            offsetLinkEnd: Qt.vector3d(0, 150, 50)
-            offsetLinkEnd2D: Qt.vector2d(0, 0)
-            offsetLinkStart: Qt.vector3d(0, 50, 0)
-            offsetLinkStart2D: Qt.vector2d(0, 0)
-            showLinker: true
-            size: Qt.size(100, 50)
-            target: targetModel
-
-            linker: [
-                ShapePath {
-                    capStyle: ShapePath.FlatCap
-                    fillColor: "white"
-                    joinStyle: ShapePath.BevelJoin
-                    startX: spatialUI.linkerEnd.x - (0.1 * spatialRectangle.width) * spatialUI.scaleFactor
-                    startY: spatialUI.linkerEnd.y - 1 - (spatialRectangle.border.width * spatialUI.scaleFactor) + (spatialRectangle.height / 2) * spatialUI.scaleFactor
-                    strokeColor: spatialRectangle.border.color
-                    strokeWidth: spatialRectangle.border.width * spatialUI.scaleFactor
-
-                    PathLine {
-                        x: spatialUI.screenTargetCenterTop.x
-                        y: spatialUI.screenTargetCenterTop.y
-                    }
-
-                    PathLine {
-                        x: spatialUI.linkerEnd.x + (0.1 * spatialRectangle.width) * spatialUI.scaleFactor
-                        y: spatialUI.linkerEnd.y - 1 - (spatialRectangle.border.width * spatialUI.scaleFactor) + (spatialRectangle.height / 2) * spatialUI.scaleFactor
-                    }
-                }
-            ]/*[
-                Shape {
-                    ShapePath {
-                        capStyle: ShapePath.RoundCap
-                        joinStyle: ShapePath.BevelJoin
-                        startX: spatialUI.linkerStart.x
-                        startY: spatialUI.linkerStart.y
-                        strokeColor: spatialUI.hovered || spatialUI.dragging ? "black" : "white"
-                        strokeWidth: 3 * spatialUI.scaleFactor
-
-                        PathLine {
-                            x: spatialUI.linkerEnd.x
-                            y: spatialUI.linkerEnd.y
-                        }
-                    }
-                }
-            ]*/
-
-            onEntered: () => {
-                if (!spatialUI.dragging) {
-                    spatialUI.cursor = Qt.OpenHandCursor;
-                }
-            }
-            onExited: () => {
-                if (!spatialUI.dragging) {
-                    spatialUI.cursor = Qt.ArrowCursor;
-                }
-            }
-            onPositionChanged: (x, y, mouse) => spatialUI.drag(x, y)
-            onPressed: (x, y, mouse) => spatialUI.startDrag(x, y)
-            onReleased: () => spatialUI.endDrag()
-
-            Rectangle {
-                id: spatialRectangle
-
-                anchors.fill: parent
-                border.color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
-                border.width: spatialUI.hovered || spatialUI.dragging ? 4 : 2
-                color: spatialUI.dragging || spatialUI.dragging ? "white" : (spatialUI.hovered || spatialUI.dragging ? "black" : "white")
-                radius: 10
-
-                Text {
-                    anchors.centerIn: parent
-                    color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
-                    font.pixelSize: 16
-                    text: "SpatialUI"
-                    visible: !spatialUI.dragging
-                }
-
-                Text {
-                    anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 3
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
-                    enabled: !spatialUI.dragging
-                    font.pixelSize: 8
-                    text: !spatialUI.dragging ? "Click and hold to move" : ""
-                    visible: !spatialUI.dragging
-                }
-
-                Image {
-                    id: moveIcon
-
-                    anchors.centerIn: parent
-                    height: 20
-                    source: "qrc:/img/move.png"
-                    visible: spatialUI.dragging
-                    width: 20
-                }
-
-                Text {
-                    anchors.bottom: parent.bottom
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: "black"
-                    enabled: spatialUI.dragging
-                    font.pixelSize: 8
-                    text: spatialUI.dragging ? spatialUI.altText : ""
-                    visible: spatialUI.dragging
+                PathLine {
+                    x: spatialUI.linkerEnd.x
+                    y: spatialUI.linkerEnd.y
                 }
             }
         }
 
-        SpatialItem {
-            id: spatialNameTag
+        Text {
+            color: "#FF00A9"
+            font.bold: !spatialUI.holdDragsTarget && spatialUI.hovered
+            font.pixelSize: 24
+            opacity: 1
+            text: "kidev"
+            visible: !spatialUI.holdDragsTarget
+            z: 1
 
-            property bool textClicked: false
-
-            camera: perspectiveCamera
-            closeUpScaling: true
-            depthTest: true
-            fixedSize: false
-            hoverEnabled: true
-            mouseEnabled: true
-            mouseLinkerEnabled: true
-            offsetLinkEnd: Qt.vector3d(0, 150, 50)
-            offsetLinkEnd2D: Qt.vector2d(0, 0)
-            offsetLinkStart: Qt.vector3d(0, 125, 0)
-            offsetLinkStart2D: Qt.vector2d(0, 0)
-            showLinker: true
-            size: Qt.size(200, 50)
-            stackingOrderLinker: spatialNameTag.linkerStart.y <= spatialNameTag.linkerEnd.y + uiRectangle.height * spatialNameTag.scaleFactor / 2 ? -1 : 1
-            target: targetHuman
-
-            linker: [
-                ShapePath {
-                    capStyle: ShapePath.FlatCap
-                    fillColor: "white"
-                    joinStyle: ShapePath.BevelJoin
-                    startX: spatialNameTag.linkerEnd.x - (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
-                    startY: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
-                    strokeColor: uiRectangle.border.color
-                    strokeWidth: uiRectangle.border.width * spatialNameTag.scaleFactor
-
-                    PathLine {
-                        x: spatialNameTag.screenTargetCenterTop.x
-                        y: spatialNameTag.screenTargetCenterTop.y
-                    }
-
-                    PathLine {
-                        x: spatialNameTag.linkerEnd.x + (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
-                        y: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
-                    }
-                }
-            ]
-
-            onClicked: () => spatialNameTag.textClicked = !spatialNameTag.textClicked
-            onEntered: () => spatialNameTag.cursor = Qt.PointingHandCursor
-            onExited: () => spatialNameTag.cursor = Qt.ArrowCursor
-
-            Rectangle {
-                id: uiRectangle
-
-                anchors.fill: parent
-                border.color: spatialNameTag.hovered ? "black" : "white"
-                border.width: 2
-                color: "white"
-                radius: 25
-
-                Text {
-                    anchors.centerIn: parent
-                    color: "black"
-                    font.pixelSize: 13.0
-                    horizontalAlignment: Text.AlignHCenter
-                    text: !spatialNameTag.textClicked ? "You spin me right 'round\nbaby, right 'round\n" : "Like a record, baby\nright 'round, 'round, 'round"
-                    verticalAlignment: Text.AlignVCenter
-                }
+            anchors {
+                centerIn: spatialRectangle
             }
         }
 
-        MouseArea {
-            id: totalMouseArea
+        Text {
+            color: "#295095"
+            font.bold: !spatialUI.holdDragsTarget && spatialUI.hovered
+            font.pixelSize: 26
+            opacity: 1
+            text: "kidev"
+            visible: !spatialUI.holdDragsTarget
+            z: 0
+
+            anchors {
+                centerIn: spatialRectangle
+            }
+        }
+
+        Rectangle {
+            id: spatialRectangle
 
             anchors.fill: parent
-            enabled: true
-            hoverEnabled: true
-            propagateComposedEvents: true
+            border.color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
+            border.width: spatialUI.holdDragsTarget ? (spatialUI.hovered || spatialUI.dragging ? 4 : 2) : 0
+            color: spatialUI.holdDragsTarget ? (spatialUI.dragging || spatialUI.dragging ? "white" : (spatialUI.hovered || spatialUI.dragging ? "black" : "white")) : "#000000"
+            opacity: spatialUI.holdDragsTarget ? 1 : 0.2
+            radius: 10
 
-            onPositionChanged: mouse => {
-                if (spatialUI.dragging) {
-                    console.log('world;' + mouse.x, mouse.y);
-                    spatialUI.drag(mouse.x, mouse.y);
-                    mouse.accepted = true;
+            Text {
+                anchors.centerIn: parent
+                color: (spatialUI.hovered || spatialUI.dragging ? "white" : "black")
+                font.bold: !spatialUI.holdDragsTarget && spatialUI.hovered
+                font.pixelSize: spatialUI.holdDragsTarget ? 16 : 24
+                opacity: 1
+                text: "SpatialUI"
+                visible: !spatialUI.dragging && spatialUI.holdDragsTarget
+            }
+
+            Text {
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 3
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: spatialUI.hovered || spatialUI.dragging ? "white" : "black"
+                enabled: !spatialUI.dragging
+                font.pixelSize: 8
+                text: !spatialUI.dragging ? "Click and hold to move" : ""
+                visible: spatialUI.holdDragsTarget && !spatialUI.dragging
+            }
+
+            Image {
+                id: moveIcon
+
+                anchors.centerIn: parent
+                height: 20
+                source: "qrc:/img/move.png"
+                visible: spatialUI.holdDragsTarget && spatialUI.dragging
+                width: 20
+            }
+
+            Text {
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "black"
+                enabled: spatialUI.dragging
+                font.pixelSize: 8
+                text: spatialUI.dragging ? `${spatialUI.target.scenePosition.x.toFixed(0)} ${spatialUI.target.scenePosition.z.toFixed(0)}` : ""
+                visible: spatialUI.holdDragsTarget && spatialUI.dragging
+            }
+        }
+    }
+
+    SpatialItem {
+        id: spatialNameTag
+
+        property bool textClicked: false
+
+        closeUpScaling: true
+        cursor: spatialNameTag.hovered ? Qt.PointingHandCursor : Qt.ArrowCursor
+        depthTest: true
+        fixedSize: false
+        holdDragsTarget: false
+        hoverEnabled: true
+        mouseEnabled: true
+        mouseLinkerEnabled: true
+        offsetLinkEnd: Qt.vector3d(0, 150, 50)
+        offsetLinkEnd2D: Qt.vector2d(0, 0)
+        offsetLinkStart: Qt.vector3d(0, 125, 0)
+        offsetLinkStart2D: Qt.vector2d(0, 0)
+        showLinker: true
+        size: Qt.size(200, 50)
+        stackingOrderLinker: spatialNameTag.linkerStart.y <= spatialNameTag.linkerEnd.y + uiRectangle.height * spatialNameTag.scaleFactor / 2 ? -1 : 1
+        target: targetHuman
+        view: view3D
+
+        linker: [
+            ShapePath {
+                capStyle: ShapePath.FlatCap
+                fillColor: "white"
+                joinStyle: ShapePath.BevelJoin
+                startX: spatialNameTag.linkerEnd.x - (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
+                startY: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
+                strokeColor: uiRectangle.border.color
+                strokeWidth: uiRectangle.border.width * spatialNameTag.scaleFactor
+
+                PathLine {
+                    x: spatialNameTag.linkerStart.x
+                    y: spatialNameTag.linkerStart.y
+                }
+
+                PathLine {
+                    x: spatialNameTag.linkerEnd.x + (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
+                    y: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
                 }
             }
-            onReleased: mouse => {
-                if (spatialUI.dragging) {
-                    spatialUI.endDrag();
-                }
+        ]
+
+        mouseArea.onClicked: {
+            spatialNameTag.textClicked = !spatialNameTag.textClicked;
+        }
+
+        Rectangle {
+            id: uiRectangle
+
+            anchors.fill: parent
+            border.color: spatialNameTag.hovered ? "black" : "white"
+            border.width: 2
+            color: "white"
+            radius: 25
+
+            Text {
+                anchors.centerIn: parent
+                color: "black"
+                font.pixelSize: 13.0
+                horizontalAlignment: Text.AlignHCenter
+                text: !spatialNameTag.textClicked ? "You spin me right 'round\nbaby, right 'round\n" : "Like a record, baby\nright 'round, 'round, 'round"
+                verticalAlignment: Text.AlignVCenter
             }
         }
     }
@@ -459,7 +457,7 @@ Window {
             cursorShape: Qt.PointingHandCursor
 
             onClicked: {
-                Qt.openUrlExternally("https://github.com/Kidev/QML-Spatial-UI");
+                Qt.openUrlExternally("https://github.com/Kidev/QML-3D-Tools");
             }
         }
     }

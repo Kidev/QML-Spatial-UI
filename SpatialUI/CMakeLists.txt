@@ -1,4 +1,4 @@
-set(SPATIALUI_QML SpatialItem.qml)
+set(SPATIALUI_QML SpatialItem.qml SpatialOrbitController.qml)
 
 qt_policy(SET QTP0001 NEW)
 

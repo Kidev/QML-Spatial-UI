@@ -1,121 +1,128 @@
 import QtQuick
-import QtQuick3D
 import QtQuick.Shapes
+import QtQuick3D
 
 Item {
     id: root
 
-    required property PerspectiveCamera camera
+    readonly property var camera: root.view.camera
     property bool closeUpScaling: false
     readonly property alias contentItem: contentItem
+    readonly property vector2d coords: root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D)
     property int cursor: Qt.ArrowCursor
     default property alias data: contentItem.data
     property bool depthTest: false
-    property real distanceFactor: 1.0
+    readonly property real distance: root.camera ? root.camera.scenePosition.minus(root.target.scenePosition).length() : 0
+    property vector2d dragStartScreenPos
+    readonly property bool dragging: itemMouseArea.dragging
     property bool fixedSize: false
     property bool forceTopStacking: false
+    property bool holdDragsTarget: false
     property bool hoverEnabled: false
-    readonly property bool hovered: itemMouseArea.containsMouse || linkerMouseArea.containsMouse
+    readonly property bool hovered: itemMouseArea.containsMouse
+    property vector3d initialTargetPosition
     property alias linker: linkerShape.data
-    readonly property vector2d linkerEnd: root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D)
-    readonly property vector2d linkerStart: root.screenTargetCenterBaseOffseted.plus(root.offsetLinkStart2D)
-    property alias mouseArea: itemMouseArea
-    property alias mouseAreaLinker: linkerMouseArea
+    readonly property vector2d linkerEnd: Qt.vector2d(root.x + root.width / 2, root.y + root.height / 2)
+    readonly property vector2d linkerStart: root.screenTargetCenterBaseOffseted
+    readonly property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
     property bool mouseLinkerEnabled: false
     property vector3d offsetLinkEnd: Qt.vector3d(0, 0, 0)
     property vector2d offsetLinkEnd2D: Qt.vector2d(0, 0)
     property vector3d offsetLinkStart: Qt.vector3d(0, 0, 0)
     property vector2d offsetLinkStart2D: Qt.vector2d(0, 0)
-    property real scaleFactor: 1.0
-    property vector2d screenTarget
+    readonly property real scaleFactor: {
+        if (!root.camera) {
+            return 1;
+        }
+        let distanceScale;
+        if (root.camera.projectionMode === PerspectiveCamera.Perspective) {
+            const fov = root.camera.fieldOfView * Math.PI / 180.0;
+            distanceScale = (Window.height / root.distance) * (1 / Math.tan(fov / 2));
+        } else {
+            const viewHeight = root.camera.verticalMagnification * 2;
+            distanceScale = Window.height / viewHeight;
+        }
+        if (root.fixedSize) {
+            return root.closeUpScaling ? Math.max(1.0, distanceScale) : 1.0;
+        }
+        return distanceScale;
+    }
+    property vector2d screenInitialTargetCenterBase
+    readonly property vector3d screenSize: Qt.vector3d(Window.width, Window.height, 1)
     property vector2d screenTargetCenterBase
     property vector2d screenTargetCenterBaseOffseted
-    property vector2d screenTargetCenterTop
     property vector2d screenTargetCenterTopOffseted
+    property bool showDraggingLine: false
     property bool showLinker: false
     required property size size
-    readonly property vector2d sizeScaled: Qt.vector2d(root.size.width, root.size.height).times(root.scaleFactor)
     property int stackingOrder: 0
     property int stackingOrderLinker: -1
     required property Model target
-    readonly property vector3d targetCenterBase: root.target.scenePosition.plus(Qt.vector3d(((root.target.bounds.minimum.x + root.target.bounds.maximum.x) / 2), root.target.bounds.minimum.y, ((root.target.bounds.minimum.z + root.target.bounds.maximum.z) / 2)).times(root.target.scale))
+    readonly property vector3d targetCenterBase: root.target.scenePosition.plus(Qt.vector3d((root.target.bounds.minimum.x + root.target.bounds.maximum.x) / 2, root.target.bounds.minimum.y, (root.target.bounds.minimum.z + root.target.bounds.maximum.z) / 2).times(root.target.scale))
     readonly property vector3d targetCenterBaseOffseted: root.targetCenterBase.plus(root.offsetLinkStart)
-    readonly property vector3d targetCenterTop: root.target.scenePosition.plus(Qt.vector3d(((root.target.bounds.minimum.x + root.target.bounds.maximum.x) / 2), root.target.bounds.maximum.y, ((root.target.bounds.minimum.z + root.target.bounds.maximum.z) / 2)).times(root.target.scale))
+    readonly property vector3d targetCenterTop: root.target.scenePosition.plus(Qt.vector3d((root.target.bounds.minimum.x + root.target.bounds.maximum.x) / 2, root.target.bounds.maximum.y, (root.target.bounds.minimum.z + root.target.bounds.maximum.z) / 2).times(root.target.scale))
     readonly property vector3d targetCenterTopOffseted: root.targetCenterTop.plus(root.offsetLinkEnd)
-    property int zDistance: 0
+    required property View3D view
+    readonly property int zDistance: root.zOffset - Math.round(root.distance)
     readonly property int zOffset: 1000000000
 
-    signal canceled
-    signal clicked(var mouse)
-    signal doubleClicked(var mouse)
     signal entered
     signal exited
-    signal positionChanged(var x, var y, var mouse)
-    signal pressAndHold(var mouse)
-    signal pressed(var x, var y, var mouse)
-    signal released(var mouse)
-    signal wheel(var wheel)
 
-    function updateDistanceFactor() {
-        const distance = root.camera.scenePosition.minus(root.target.scenePosition).length();
-        root.zDistance = root.zOffset - Math.round(distance);
-        const fov = root.camera.fieldOfView * Math.PI / 180.0;
-        let perspectiveScale = (Window.height / distance) * (1 / Math.tan(fov / 2));
-        root.distanceFactor = perspectiveScale;
-        if (root.fixedSize) {
-            if (root.closeUpScaling) {
-                perspectiveScale = Math.max(1.0, perspectiveScale);
-            } else {
-                perspectiveScale = 1.0;
-            }
+    function updateUIPosition() {
+        if (!root.view || !root.camera || !root.target) {
+            return;
         }
-        root.scaleFactor = perspectiveScale;
-    }
-
-    function updateSceneProjection() {
-        const screenSize = Qt.vector3d(Window.width, Window.height, 1);
-        const screenTarget = root.camera.mapToViewport(root.target.scenePosition).times(screenSize);
-        const screenTargetCenterBase = root.camera.mapToViewport(root.targetCenterBase).times(screenSize);
-        const screenTargetCenterTop = root.camera.mapToViewport(root.targetCenterTop).times(screenSize);
-        const screenTargetCenterBaseOffseted = root.camera.mapToViewport(root.targetCenterBaseOffseted).times(screenSize);
-        const screenTargetCenterTopOffseted = root.camera.mapToViewport(root.targetCenterTopOffseted).times(screenSize);
-        root.screenTarget = screenTarget.z > 0 ? screenTarget.toVector2d() : Qt.vector2d(-10000, -10000);
-        root.screenTargetCenterBase = screenTargetCenterBase.z > 0 ? screenTargetCenterBase.toVector2d() : Qt.vector2d(-10000, -10000);
-        root.screenTargetCenterTop = screenTargetCenterTop.z > 0 ? screenTargetCenterTop.toVector2d() : Qt.vector2d(-10000, -10000);
+        const screenTargetCenterBaseOffseted = root.camera.mapToViewport(root.targetCenterBaseOffseted).times(root.screenSize).plus(root.offsetLinkStart2D);
+        const screenTargetCenterTopOffseted = root.camera.mapToViewport(root.targetCenterTopOffseted).times(root.screenSize).plus(root.offsetLinkEnd2D);
         root.screenTargetCenterBaseOffseted = screenTargetCenterBaseOffseted.z > 0 ? screenTargetCenterBaseOffseted.toVector2d() : Qt.vector2d(-10000, -10000);
         root.screenTargetCenterTopOffseted = screenTargetCenterTopOffseted.z > 0 ? screenTargetCenterTopOffseted.toVector2d() : Qt.vector2d(-10000, -10000);
-        root.updateDistanceFactor();
+        if (root.dragging) {
+            const screenTargetCenterBase = root.camera.mapToViewport(root.targetCenterBase).times(root.screenSize);
+            root.screenTargetCenterBase = screenTargetCenterBase.z > 0 ? screenTargetCenterBase.toVector2d() : Qt.vector2d(-10000, -10000);
+            if (root.showDraggingLine) {
+                const screenInitialTargetCenterBase = root.camera.mapToViewport(root.initialTargetPosition).times(root.screenSize);
+                root.screenInitialTargetCenterBase = screenInitialTargetCenterBase.z > 0 ? screenInitialTargetCenterBase.toVector2d() : Qt.vector2d(-10000, -10000);
+            }
+        }
     }
 
-    z: {
-        if (root.forceTopStacking) {
-            return root.zOffset + 1;
-        }
-        if (root.depthTest) {
-            return root.zDistance;
-        }
-        return root.stackingOrder;
+    height: root.size.height
+    width: root.size.width
+    x: root.coords.x
+    y: root.coords.y
+    z: root.forceTopStacking ? root.zOffset + 1 : (root.depthTest ? root.zDistance : root.stackingOrder)
+
+    transform: Scale {
+        origin.x: root.size.width / 2
+        origin.y: root.size.height / 2
+        xScale: root.scaleFactor
+        yScale: root.scaleFactor
     }
 
-    Component.onCompleted: () => root.updateSceneProjection()
-    onFixedSizeChanged: () => root.updateDistanceFactor()
-    onHoveredChanged: () => {
+    Component.onCompleted: Qt.callLater(root.updateUIPosition)
+    Window.onHeightChanged: Qt.callLater(root.updateUIPosition)
+    Window.onWidthChanged: Qt.callLater(root.updateUIPosition)
+    onHoveredChanged: {
         if (root.hovered) {
             root.entered();
         } else {
             root.exited();
         }
-        root.updateSceneProjection();
     }
+    onOffsetLinkEnd2DChanged: Qt.callLater(root.updateUIPosition)
+    onOffsetLinkEndChanged: Qt.callLater(root.updateUIPosition)
+    onOffsetLinkStart2DChanged: Qt.callLater(root.updateUIPosition)
+    onOffsetLinkStartChanged: Qt.callLater(root.updateUIPosition)
 
     Connections {
         function onScenePositionChanged() {
-            root.updateSceneProjection();
+            Qt.callLater(root.updateUIPosition);
         }
 
         function onSceneRotationChanged() {
-            root.updateSceneProjection();
+            Qt.callLater(root.updateUIPosition);
         }
 
         target: root.camera
@@ -123,151 +130,124 @@ Item {
 
     Connections {
         function onScenePositionChanged() {
-            root.updateSceneProjection();
+            Qt.callLater(root.updateUIPosition);
         }
 
         function onSceneRotationChanged() {
-            root.updateSceneProjection();
+            Qt.callLater(root.updateUIPosition);
         }
 
-        target: root.camera.parent
+        target: root.camera ? root.camera.parent : null
     }
 
     Connections {
         function onScenePositionChanged() {
-            root.updateSceneProjection();
-        }
-
-        function onSceneRotationChanged() {
-            root.updateSceneProjection();
+            Qt.callLater(root.updateUIPosition);
         }
 
         target: root.target
     }
 
-    Connections {
-        function onActiveChanged() {
-            root.updateSceneProjection();
-        }
-
-        function onHeightChanged() {
-            root.updateSceneProjection();
-        }
-
-        function onWidthChanged() {
-            root.updateSceneProjection();
-        }
-
-        target: root.Window.window
-    }
-
-    Connections {
-        function onActiveChanged() {
-            root.updateSceneProjection();
-        }
-
-        function onHeightChanged() {
-            root.updateSceneProjection();
-        }
-
-        function onWidthChanged() {
-            root.updateSceneProjection();
-        }
-
-        target: Window.window
-    }
-
     Item {
-        id: contentItemContainer
+        id: contentItem
 
-        x: root.linkerEnd.x
-        y: root.linkerEnd.y
+        anchors.fill: root
+    }
 
-        Item {
-            id: contentItem
+    MouseArea {
+        id: itemMouseArea
 
-            anchors.centerIn: parent
-            height: root.size.height
-            width: root.size.width
+        property bool dragging: false
 
-            transform: Scale {
-                origin.x: contentItem.width / 2
-                origin.y: contentItem.height / 2
-                xScale: root.scaleFactor
-                yScale: root.scaleFactor
+        anchors.fill: root
+        cursorShape: root.cursor
+        enabled: root.mouseEnabled
+        hoverEnabled: root.hoverEnabled
+
+        onEntered: {
+            if (root.holdDragsTarget) {
+                itemMouseArea.cursorShape = Qt.OpenHandCursor;
             }
-
-            MouseArea {
-                id: itemMouseArea
-
-                anchors.fill: contentItem
-                cursorShape: root.cursor
-                enabled: root.mouseEnabled
-                hoverEnabled: root.hoverEnabled
-                propagateComposedEvents: true
-                z: root.z + 2
-
-                onCanceled: () => root.canceled()
-                onClicked: mouse => root.clicked(mouse)
-                onDoubleClicked: mouse => root.doubleClicked(mouse)
-                onPositionChanged: mouse => {
-                    //root.positionChanged(mouse.x * root.scaleFactor + contentItemContainer.x, mouse.y * root.scaleFactor + contentItemContainer.y, mouse);
-                    const mapped = mapToItem(root, mouse.x, mouse.y);
-                    root.positionChanged(mapped.x, mapped.y, mouse);
-                }
-                onPressAndHold: mouse => root.pressAndHold(mouse)
-                onPressed: mouse => {
-                    root.pressed(mouse.x + root.size.width / 2, mouse.y + root.size.height / 2, mouse);
-                }
-                onReleased: mouse => root.released(mouse)
-                onWheel: wheel => {
-                    root.wheel(wheel);
-                    wheel.accepted = false;
+        }
+        onExited: {
+            if (root.holdDragsTarget) {
+                itemMouseArea.cursorShape = Qt.ArrowCursor;
+            }
+        }
+        onPositionChanged: mouse => {
+            if (itemMouseArea.dragging) {
+                root.mouseArea.cursorShape = Qt.DragMoveCursor;
+                const currentPos = Qt.vector2d(mouse.x, mouse.y).times(root.scaleFactor).plus(Qt.vector2d(root.x, root.y));
+                const pos = currentPos.minus(root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D).minus(root.screenTargetCenterBase)).minus(root.dragStartScreenPos.times(root.scaleFactor));
+                const viewportX = pos.x / root.view.width;
+                const viewportY = pos.y / root.view.height;
+                const nearPoint = root.view.camera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
+                const farPoint = root.view.camera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 1));
+                const ray_start = nearPoint;
+                const ray_direction = farPoint.minus(nearPoint).normalized();
+                const planeYPosition = 0;
+                const plane_normal = Qt.vector3d(0, 1, 0);
+                const plane_point = Qt.vector3d(0, planeYPosition, 0);
+                const denominator = ray_direction.dotProduct(plane_normal);
+                if (Math.abs(denominator) > 0.0001) {
+                    const t = plane_point.minus(ray_start).dotProduct(plane_normal) / denominator;
+                    if (t >= 0) {
+                        const intersection = ray_start.plus(ray_direction.times(t));
+                        root.target.position = Qt.vector3d(intersection.x, root.initialTargetPosition.y, intersection.z);
+                    }
                 }
             }
+        }
+        onPressed: mouse => {
+            if (root.holdDragsTarget) {
+                const pos = Qt.vector2d(mouse.x, mouse.y).times(root.scaleFactor).plus(Qt.vector2d(root.x, root.y));
+                root.dragStartScreenPos = pos.minus(Qt.vector2d(root.x, root.y));
+                root.initialTargetPosition = root.targetCenterBaseOffseted;
+                itemMouseArea.dragging = true;
+                root.mouseArea.cursorShape = Qt.ClosedHandCursor;
+            }
+            root.updateUIPosition();
+        }
+        onReleased: () => {
+            itemMouseArea.dragging = false;
+            if (root.holdDragsTarget) {
+                root.initialTargetPosition = root.target.scenePosition;
+                if (root.mouseArea.containsMouse) {
+                    root.mouseArea.cursorShape = Qt.OpenHandCursor;
+                } else {
+                    root.mouseArea.cursorShape = Qt.ArrowCursor;
+                }
+            }
+            root.updateUIPosition();
         }
     }
 
     Shape {
         id: linkerShape
 
-        z: root.stackingOrderLinker
+        anchors.fill: parent
+        parent: Window.contentItem
+        z: root.z + root.stackingOrderLinker
     }
 
-    Item {
-        id: linkerShapeItem
+    Shape {
+        id: draggingLineShape
 
-        height: linkerShape.boundingRect.height
-        visible: root.showLinker
-        width: linkerShape.boundingRect.width
-        x: linkerShape.boundingRect.x
-        y: linkerShape.boundingRect.y
-        z: root.stackingOrderLinker
+        anchors.fill: parent
+        parent: Window.contentItem
+        visible: root.dragging && root.showDraggingLine
 
-        MouseArea {
-            id: linkerMouseArea
+        ShapePath {
+            capStyle: ShapePath.RoundCap
+            joinStyle: ShapePath.BevelJoin
+            startX: root.screenInitialTargetCenterBase.x
+            startY: root.screenInitialTargetCenterBase.y
+            strokeColor: "green"
+            strokeWidth: 3
 
-            anchors.fill: linkerShapeItem
-            cursorShape: root.cursor
-            enabled: root.mouseLinkerEnabled
-            hoverEnabled: root.hoverEnabled
-            propagateComposedEvents: true
-
-            onCanceled: () => root.canceled()
-            onClicked: mouse => root.clicked(mouse)
-            onDoubleClicked: mouse => root.doubleClicked(mouse)
-            onPositionChanged: mouse => {
-                const mapped = mapToItem(root, mouse.x, mouse.y);
-                root.positionChanged(mapped.x + root.sizeScaled.x, mapped.y + root.sizeScaled.y, mouse);
-            }
-            onPressAndHold: mouse => root.pressAndHold(mouse)
-            onPressed: mouse => {
-                root.pressed(mouse.x + root.sizeScaled.x / 2, mouse.y + root.sizeScaled.y, mouse);
-            }
-            onReleased: mouse => root.released(mouse)
-            onWheel: wheel => {
-                root.wheel(wheel);
-                wheel.accepted = false;
+            PathLine {
+                x: root.screenTargetCenterBaseOffseted.x
+                y: root.screenTargetCenterBaseOffseted.y
             }
         }
     }
