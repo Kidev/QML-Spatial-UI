@@ -1,9 +1,9 @@
-# QML Spatial UI
-QML Spatial UI is a QtQuick3D component designed for creating interactive and dynamic 2D overlays for 3D models in a QML-based user interface. It provides a flexible way to link 2D elements, such as labels, icons, or controls, to specific objects in 3D space, while maintaining the proper visual relationship as the camera or objects move. This makes it particularly useful for creating augmented reality interfaces, games, or spatial annotations. 
+# QtQuick3D Tools
+QtQuick3D Tools is a QML module designed for creating interactive and dynamic 2D overlays for 3D models in a QML-based user interface. It provides a flexible way to link 2D elements, such as labels, icons, or controls, to specific objects in 3D space, while maintaining the proper visual relationship as the camera or objects move. This makes it particularly useful for creating augmented reality interfaces, games, or spatial annotations. 
 
 ## Demo
 
- [A demo of SpatialItem in your browser is available here](https://demo.kidev.org/QML-Spatial-UI/). \
+ [A demo of SpatialItem in your browser is available here](https://demo.kidev.org/QtQuick3D-Tools/). \
  This demo showcases the interaction between 2D overlays and 3D objects, demonstrating how the UI elements dynamically adjust to camera movements. Moreover, it highlights the possibilities of the tool by implementing a 3D move tool: just press and hold left mouse button on the "SpatialUI" to move its associated target. The other bubble text can be cycled by left clicking on it. Otherwise, left click lets you orbit around a point, and right click lets you change that center point by panning.
  
 ## Features
@@ -154,15 +154,15 @@ Aliases:
     - Don't forget to add `--recurse-submodules` when cloning, or run `git submodule update --init`
     - To update the version of SpatialUI your have on your project `git submodule update --remote`
 ```bash
-git submodule add -b main https://github.com/Kidev/QML-Spatial-UI libs/QMLSpatialUI
+git submodule add -b main https://github.com/Kidev/QtQuick3D-Tools libs/
 ```
 - Add in your `CMakeLists.txt`
 ```cmake
-add_subdirectory(libs/QMLSpatialUI)
+add_subdirectory(libs/QtQuick3D/Tools)
 ```
 - Then you can import in QML and use `SpatialItem`:
 ```qml
-import SpatialUI
+import QtQuick3D.Tools
 ```
 
 ### Simple example
@@ -171,13 +171,13 @@ import QtQuick
 import QtQuick3D
 import QtQuick3D.Helpers
 import QtQuick.Shapes
-import SpatialUI
+import QtQuick3D.Tools
 
 Window {
     id: root
 
     height: 480
-    title: qsTr("SpatialUI Example")
+    title: qsTr("QtQuick3D Tools Example")
     visible: true
     width: 640
 
@@ -276,7 +276,7 @@ Window {
 }
 ```
 
-For more advanced uses, tricks, and deploys, you can check [the code of the demo here](https://github.com/Kidev/QML-Spatial-UI/tree/main/example)
+For more advanced uses, tricks, and deploys, you can check [the code of the demo here](https://github.com/Kidev/QtQuick3D-Tools/tree/main/example)
 
 ### Building the demo
 This works on Linux, Windows and macOS for the architectures `gcc_64`, `clang_64`, `win64_msvc2019_64`, `win64_mingw`, `wasm_singlethread`, `wasm_multithread`. All the arm64 architectures are untested, but it may work.  
@@ -284,7 +284,7 @@ This works on Linux, Windows and macOS for the architectures `gcc_64`, `clang_64
 - For desktop:
   - Install Qt for your architecture, for example `gcc_64`.  
   - Set `QT_ROOT`, `QT_VERSION`, `QT_ARCH` to the appropriate values for your Qt installation and run: \
-    `make desktop QT_ROOT="/opt/Qt" QT_VERSION="6.7.3" QT_ARCH="gcc_64"`  
+    `make desktop QT_ROOT="/opt/Qt" QT_VERSION="6.6.3" QT_ARCH="gcc_64"`  
 - For the web:
   - Install Qt for your host and target architectures, for example `gcc_64` AND `wasm_singlethread`.  
   - Enable the following headers (COOP and COEP) on your server:  
@@ -292,8 +292,8 @@ This works on Linux, Windows and macOS for the architectures `gcc_64`, `clang_64
     Cross-Origin-Opener-Policy: same-origin
     Cross-Origin-Embedder-Policy: require-corp
     ```
-  - Set `QT_ROOT`, `QT_VERSION`, [`EMSDK_VERSION`](https://doc.qt.io/qt-6/wasm.html), `QT_HOST_ARCH` and `QT_TARGET_ARCH` to the appropriate values for your Qt installation and run: \
-    `make web QT_ROOT="/opt/Qt" QT_VERSION="6.6.0" EMSDK_VERSION="3.1.37" QT_HOST_ARCH="gcc_64" QT_TARGET_ARCH="wasm_singlethread"`
+  - Set `QT_ROOT`, `QT_VERSION`, `QT_HOST_ARCH` and `QT_TARGET_ARCH` to the appropriate values for your Qt installation and run: \
+    `make web QT_ROOT="/opt/Qt" QT_VERSION="6.6.3" QT_HOST_ARCH="gcc_64" QT_TARGET_ARCH="wasm_singlethread"`
 - You can use `make run` / `make run-web` to run the desktop version / to run the web version in your favorite browser.
 - If you use QtCreator, you may get the error `You need to set an executable in the custom run configuration`. To fix it, simply go to `Projects` on the left, select your kit, click on `Current Configuration` and make sure the option `BUILD_EXAMPLE` is ticked ON.
 
