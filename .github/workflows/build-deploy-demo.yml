@@ -12,12 +12,12 @@ jobs:
       workspace_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI'
       qt_version: '6.6.3'
       qt_host_arch: 'gcc_64'
-      qt_target_arch: 'wasm_multithread'
+      qt_target_arch: 'wasm_singlethread'
       qt_modules: 'qtquick3d qtquicktimeline qtshadertools'
       qt_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt'
       target_folder: 'QML-Spatial-UI'
       source_folder: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/build/example'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
