@@ -2,7 +2,7 @@ QT_ROOT ?= "/opt/Qt"
 QT_VERSION ?= "6.6.3"
 QT_ARCH ?= "gcc_64
 QT_HOST_ARCH ?= "gcc_64"
-QT_TARGET_ARCH ?= "wasm_multithread"
+QT_TARGET_ARCH ?= "wasm_singlethread"
 
 all: desktop run
 
