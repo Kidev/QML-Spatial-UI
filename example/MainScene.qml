@@ -2,14 +2,13 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Shapes
 import QtQuick3D
-import QtQuick3D.Helpers
-import SpatialUI
+import QtQuick3D.Tools
 
 Window {
     id: root
 
     height: 1000
-    title: "SpatialUI"
+    title: "QtQuick3D Tools"
     visible: true
     width: 1000
 
@@ -156,7 +155,7 @@ Window {
             }
         }
 
-        SpatialOrbitController {
+        ExtendedOrbitCameraController {
             id: orbitCameraController
 
             anchors.fill: parent

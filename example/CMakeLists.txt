@@ -46,7 +46,7 @@ endif ()
 
 set_target_properties(
     exampleExec
-    PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER org.kidev.spatialui
+    PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER org.kidev.qtquick3d.tools
                MACOSX_BUNDLE TRUE
                WIN32_EXECUTABLE TRUE
 )
@@ -58,7 +58,6 @@ target_link_libraries(
             Qt6::Quick
             Qt6::Quick3D
             Qt6::Qml
-    PUBLIC SpatialUILibplugin
 )
 
 install(

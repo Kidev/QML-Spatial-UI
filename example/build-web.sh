@@ -59,7 +59,7 @@ cp example/img/move.png build/example/move.png -f
 
 mv build/example/exampleExec.html build/example/index.html
 
-sed -i 's#<title>exampleExec</title>#<title>QML Spatial UI | Kidev.org<\/title><link rel="icon" href="favicon.ico" type="image/x-icon">#g' build/example/index.html
+sed -i 's#<title>exampleExec</title>#<title>QtQuick3D Tools Demo | Kidev.org<\/title><link rel="icon" href="favicon.ico" type="image/x-icon">#g' build/example/index.html
 sed -i "s#<strong>Qt for WebAssembly: exampleExec</strong>#<h1 style='color:\#ffffff;'><strong>QML Spatial UI</strong></h1><span style='color:\#ffffff;'>Written by Kidev using Qt</span><br><br><img src='qtlogo.svg' width='160' height='100' style='display:block'>#g" build/example/index.html
 sed -i "s# height: 100% }# height: 100%; background-color:\#01010c; }#g" build/example/index.html
 sed -i 's#<img src="qtlogo.svg" width="320" height="200" style="display:block"></img>#<img src="logo.png" width="260" height="260" style="display:block">#g' build/example/index.html

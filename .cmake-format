@@ -11,7 +11,7 @@ with section("parse"):
         'qt_add_library': {'pargs': '1+', 'flags': ['STATIC', 'SHARED', 'MODULE', 'INTERFACE', 'OBJECT', 'MANUAL_FINALIZATION'], 'kwargs': {}},
         'qt_add_plugin': {'pargs': '1+', 'flags': ['SHARED', 'STATIC', 'MANUAL_FINALIZATION'], 'kwargs': {'CLASS_NAME': 1, 'OUTPUT_TARGETS': 1}},
         'qt_add_resources': {'pargs': '2+', 'flags': ['PREFIX', 'LANG', 'BASE', 'BIG_RESOURCES'], 'kwargs': {'OUTPUT_TARGETS': 1}},
-        'qt_add_qml_module': {'pargs': '2+', 'flags': ['STATIC', 'SHARED', 'NO_PLUGIN', 'NO_CACHEGEN', 'NO_LINT', 'NO_RESOURCE_TARGET_PATH'], 'kwargs': {'URI': 1, 'VERSION': 1, 'CLASS_NAME': 1, 'QML_FILES': '*', 'RESOURCES': '*', 'RESOURCE_PREFIX': 1, 'IMPORTS': '*'}},
+        'qt_add_qml_module': {'pargs': '2+', 'flags': ['STATIC', 'SHARED', 'NO_PLUGIN', 'NO_CACHEGEN', 'NO_LINT', 'NO_RESOURCE_TARGET_PATH'], 'kwargs': {'URI': 1, 'VERSION': 1, 'CLASS_NAME': 1, 'QML_FILES': '*', 'RESOURCES': '*', 'RESOURCE_PREFIX': 1, 'IMPORTS': '*', 'PLUGIN_TARGET': 1, 'DEPENDENCIES': '*', 'PAST_MAJOR_VERSIONS': 1, 'SOURCES': '*', 'RESOURCES': '*', 'DEFINES': '*', 'LIBRARIES': '*', 'PUBLIC_LIBRARIES': '*'}},
         'qt_generate_deploy_qml_app_script': {'pargs': '1+', 'flags': ['NO_UNSUPPORTED_PLATFORM_ERROR', 'NO_TRANSLATIONS', 'MACOS_BUNDLE_POST_BUILD'], 'kwargs': {'OUTPUT_SCRIPT': 1}},
         'qt_generate_deploy_script': {'pargs': '1+', 'flags': [], 'kwargs': {'OUTPUT_SCRIPT': 1, 'TARGET': 1, 'NAME': 1}},
         'qt_set_finalizer_mode': {'pargs': '2+', 'flags': [], 'kwargs': {}},
@@ -19,6 +19,7 @@ with section("parse"):
         'qt_wrap_cpp': {'pargs': '1+', 'flags': [], 'kwargs': {'TARGET': 1, 'OPTIONS': '*', 'DEPENDS': '*'}},
         'qt_deploy_qml_imports': {'pargs': '1+', 'flags': [], 'kwargs': {'TARGET': 1, 'QML_DIR': 1}},
     }
+    additional_commands['qt_internal_add_qml_module'] = additional_commands['qt_add_qml_module']
 
     # Override configurations per-command where available
     override_spec = {}
