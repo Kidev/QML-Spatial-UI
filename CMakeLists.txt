@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Quick3DTools LANGUAGES CXX)
+project(QtQuick3DTools LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 20)
@@ -23,7 +23,7 @@ if (EMSCRIPTEN)
     set(QT_WASM_INITIAL_MEMORY 33554432)
 endif ()
 
-add_subdirectory(qtquick3d/tools)
+add_subdirectory(QtQuick3D/Tools)
 if (BUILD_EXAMPLE)
     add_subdirectory(example)
 endif ()

@@ -9,14 +9,14 @@ jobs:
   build-and-deploy:
     name: "Build and deploy"
     env:
-      workspace_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI'
+      workspace_root: '/home/runner/work/QtQuick3D-Tools/QtQuick3D-Tools'
       qt_version: '6.6.3'
       qt_host_arch: 'gcc_64'
       qt_target_arch: 'wasm_singlethread'
       qt_modules: 'qtquick3d qtquicktimeline qtshadertools'
-      qt_root: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/Qt'
-      target_folder: 'QML-Spatial-UI'
-      source_folder: '/home/runner/work/QML-Spatial-UI/QML-Spatial-UI/build/example'
+      qt_root: '/home/runner/work/QtQuick3D-Tools/QtQuick3D-Tools/Qt'
+      target_folder: 'QtQuick3D-Tools'
+      source_folder: '/home/runner/work/QtQuick3D-Tools/QtQuick3D-Tools/build/example'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
