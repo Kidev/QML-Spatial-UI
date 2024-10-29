@@ -1,3 +1,5 @@
+#!/bin/bash
+
 QT_ROOT=$1
 QT_VERSION=$2
 QT_ARCH=$3
