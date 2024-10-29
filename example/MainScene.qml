@@ -27,20 +27,9 @@ Window {
 
         environment: SceneEnvironment {
             antialiasingMode: SceneEnvironment.MSAA
-            antialiasingQuality: SceneEnvironment.High
+            antialiasingQuality: SceneEnvironment.Medium
             backgroundMode: SceneEnvironment.Color
-            clearColor: theFog.color
-
-            fog: Fog {
-                id: theFog
-
-                color: "black"
-                density: 0.99
-                depthEnabled: true
-                depthFar: 10000
-                depthNear: 7000
-                enabled: true
-            }
+            clearColor: "black"
         }
 
         Model {
@@ -52,7 +41,6 @@ Window {
 
             materials: DefaultMaterial {
                 diffuseColor: "red"
-                lighting: DefaultMaterial.NoLighting
             }
         }
 
@@ -65,7 +53,6 @@ Window {
 
             materials: DefaultMaterial {
                 diffuseColor: "blue"
-                lighting: DefaultMaterial.NoLighting
             }
         }
 
@@ -89,7 +76,7 @@ Window {
             ambientColor: Qt.rgba(0.1, 0.1, 0.1, 1.0)
             brightness: 1
             castsShadow: true
-            coneAngle: orbitCameraController.isTracking ? 100 : 160
+            coneAngle: orbitCameraController.isTracking ? 80 : 160
             constantFade: 0
             eulerRotation.x: -90
             innerConeAngle: 0.9 * coneAngle
@@ -261,9 +248,9 @@ Window {
         hoverEnabled: true
         mouseEnabled: true
         mouseLinkerEnabled: true
-        offsetLinkEnd: spatialUI.holdDragsTarget ? Qt.vector3d(0, 150, 50) : Qt.vector3d(-spatialUI.width * spatialUI.scaleFactor / 2, 150, -spatialUI.height * spatialUI.scaleFactor / 2)
+        offsetLinkEnd: spatialUI.holdDragsTarget ? Qt.vector3d(0, 150, 50) : Qt.vector3d(-spatialUI.size.width / 2, 150, -spatialUI.size.width / 2)
         offsetLinkEnd2D: Qt.vector2d(0, 0)
-        offsetLinkStart: Qt.vector3d(0, 50, 0)
+        offsetLinkStart: spatialUI.holdDragsTarget ? Qt.vector3d(0, 50, 0) : Qt.vector3d(0, 50, 0)
         offsetLinkStart2D: Qt.vector2d(0, 0)
         showDraggingLine: true
         showLinker: spatialUI.holdDragsTarget
