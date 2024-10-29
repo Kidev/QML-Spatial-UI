@@ -20,7 +20,7 @@ find_package(
 qt_standard_project_setup()
 
 if (EMSCRIPTEN)
-    set(QT_WASM_INITIAL_MEMORY 134217728)
+    set(QT_WASM_INITIAL_MEMORY 128MB)
     set(QT_WASM_PTHREAD_POOL_SIZE 4)
 endif ()
 

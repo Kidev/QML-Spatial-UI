@@ -3,7 +3,7 @@ QT_VERSION ?= "6.7.3"
 EMSDK_VERSION ?= "3.1.50"
 QT_ARCH ?= "gcc_64
 QT_HOST_ARCH ?= "gcc_64"
-QT_TARGET_ARCH ?= "singlethread_wasm"
+QT_TARGET_ARCH ?= "wasm_singlethread"
 
 all: desktop run
 

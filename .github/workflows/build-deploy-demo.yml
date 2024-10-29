@@ -85,6 +85,13 @@ jobs:
           QT_TARGET_ARCH=${{ env.qt_target_arch }} \
           EMSDK_VERSION=${{ env.emsdk_version }}
 
+      - name: Compress Files (Brotli)
+        uses: stefh/ghaction-CompressFiles@v2
+        with:
+            path: ${{ env.source_folder }}
+            extensions: '.js,.css,.html,.wasm,.png,.ico,.mesh'
+            tools: 'brotli'
+
       - name: Upload to FTP
         shell: bash
         run: |
