@@ -1,8 +1,22 @@
 QT_ROOT=$1
 QT_VERSION=$2
-EMSDK_VERSION=$3
-QT_HOST_ARCH=$4
-QT_TARGET_ARCH=$5
+QT_HOST_ARCH=$3
+QT_TARGET_ARCH=$4
+EMSDK_VERSION=""
+
+case "$QT_VERSION" in
+    6.2*) EMSDK_VERSION="2.0.14" ;;
+    6.3*) EMSDK_VERSION="3.0.0" ;;
+    6.4*) EMSDK_VERSION="3.1.14" ;;
+    6.5*) EMSDK_VERSION="3.1.25" ;;
+    6.6*) EMSDK_VERSION="3.1.37" ;;
+    6.7*) EMSDK_VERSION="3.1.50" ;;
+    6.8*) EMSDK_VERSION="3.1.56" ;;
+    *)
+        echo "Unsupported Qt version: $QT_VERSION"
+        exit 1
+        ;;
+esac
 
 QT_VERSION_NAME="Qt${QT_VERSION:0:1}"
 QT_ROOT_TARGET="${QT_ROOT}/${QT_VERSION}/${QT_TARGET_ARCH}"
@@ -11,11 +25,20 @@ QT_HOST_CMAKE_DIR="${QT_ROOT_HOST}/lib/cmake"
 QT_MODULE_PATH="${QT_ROOT_TARGET}/lib/cmake/${QT_VERSION_NAME}"
 QT_TOOLCHAIN="${QT_ROOT_TARGET}/lib/cmake/${QT_VERSION_NAME}/qt.toolchain.cmake"
 
-git clone https://github.com/emscripten-core/emsdk.git
-./emsdk/emsdk install ${EMSDK_VERSION}
-./emsdk/emsdk activate ${EMSDK_VERSION}
+if [ ! -d "emsdk" ]; then
+    git clone https://github.com/emscripten-core/emsdk.git
+fi
 
-source ./emsdk/emsdk_env.sh
+INSTALLED_VERSION=$(./emsdk/emsdk list | grep '\*' | grep -oP '^\* \K[^\s]+')
+if [ "$INSTALLED_VERSION" != "$EMSDK_VERSION" ]; then
+    ./emsdk/emsdk install ${EMSDK_VERSION}
+fi
+
+ACTIVE_VERSION=$(./emsdk/emsdk list | grep 'ACTIVE' | grep -oP '^\* \K[^\s]+')
+if [ "$ACTIVE_VERSION" != "$EMSDK_VERSION" ]; then
+    ./emsdk/emsdk activate ${EMSDK_VERSION}
+    source ./emsdk/emsdk_env.sh
+fi
 
 mkdir -p build
 ./emsdk/upstream/emscripten/emcmake cmake -G Ninja -S . -B build \
@@ -32,6 +55,7 @@ cmake --build build/
 cp example/img/favicon.ico build/example/favicon.ico -f
 cp example/img/logo.png build/example/logo.png -f
 cp example/img/github.png build/example/github.png -f
+cp example/img/move.png build/example/move.png -f
 
 mv build/example/exampleExec.html build/example/index.html
 
@@ -45,7 +69,7 @@ sed -i 's#undefined ? ` ()` :#undefined ? `<br><span style="color:\#ff0000">Erro
 sed -i 's/\/\*.*\*\///g' build/example/index.html
 sed -i '/<!--/,/-->/d' build/example/index.html
 
-rm -rf build/example/.*
+rm -rf build/example/.[\!.]* build/example/.?*
 rm -rf build/example/CMakeFiles
 rm -rf build/example/example
 rm -rf build/example/exampleExec_autogen
@@ -53,3 +77,5 @@ rm -rf build/example/meta_types
 rm -rf build/example/qmltypes
 rm -f build/example/cmake_install.cmake
 rm -f build/example/*.cpp
+
+find build/example -type f \( -name "*.js" -o -name "*.css" -o -name "*.html" -o -name "*.wasm" -o -name "*.png" -o -name "*.ico" -o -name "*.mesh" \) -exec brotli --best --force {} \;
