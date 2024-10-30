@@ -9,7 +9,7 @@ Item {
     property vector2d __raycastDeviation
     property vector2d __startDeviation
     property vector2d __testValue
-    property vector2d __topLeftCorner
+    property vector2d __topLeftCorner: root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D)
     readonly property var camera: root.view.camera
     property bool closeUpScaling: false
     readonly property alias contentItem: contentItem
@@ -27,7 +27,7 @@ Item {
     readonly property bool hovered: itemMouseArea.containsMouse
     property vector3d initialTargetPosition
     property alias linker: linkerShape.data
-    readonly property vector2d linkerEnd: Qt.vector2d(root.x + root.width / 2, root.y + root.height / 2)
+    readonly property vector2d linkerEnd: root.__topLeftCorner.plus(Qt.vector2d(root.size.width / 2, root.size.height / 2).times(root.scaleFactor))
     readonly property vector2d linkerStart: root.screenTargetCenterBaseOffseted
     readonly property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
@@ -96,13 +96,13 @@ Item {
 
     height: root.size.height
     width: root.size.width
-    x: root.coords.x
-    y: root.coords.y
+    x: root.__topLeftCorner.x
+    y: root.__topLeftCorner.y
     z: root.forceTopStacking ? root.zOffset + 1 : (root.depthTest ? root.zDistance : root.stackingOrder)
 
     transform: Scale {
-        origin.x: root.size.width / 2
-        origin.y: root.size.height / 2
+        origin.x: 0//root.size.width / 2
+        origin.y: 0//root.size.height / 2
         xScale: root.scaleFactor
         yScale: root.scaleFactor
     }
@@ -184,9 +184,10 @@ Item {
             if (itemMouseArea.dragging) {
                 root.mouseArea.cursorShape = Qt.DragMoveCursor;
                 const currentPos = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
-                const pos = Qt.vector2d(currentPos.x, currentPos.y).plus(root.translationVector);
                 root.__testValue = Qt.vector2d(currentPos.x, currentPos.y);
-                root.__topLeftCorner = Qt.vector2d(currentPos.x, currentPos.y).minus(root.__clickInitialDeviation.times(root.scaleFactor));
+                //root.__topLeftCorner = Qt.vector2d(currentPos.x, currentPos.y).minus(root.__clickInitialDeviation.times(root.scaleFactor));
+                root.__topLeftCorner = Qt.vector2d(currentPos.x, currentPos.y).minus(root.__clickInitialDeviation);
+                const pos = root.__topLeftCorner.plus(root.__raycastDeviation.times(root.scaleFactor));
                 const viewportX = pos.x / root.view.width;
                 const viewportY = pos.y / root.view.height;
                 const nearPoint = root.view.camera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
@@ -210,7 +211,8 @@ Item {
             if (root.holdDragsTarget) {
                 root.dragStartScreenPos = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
                 root.__clickInitialDeviation = Qt.vector2d(mouse.x, mouse.y);
-                root.__topLeftCorner = Qt.vector2d(root.dragStartScreenPos.x - root.__clickInitialDeviation.x * root.scaleFactor, root.dragStartScreenPos.y - root.__clickInitialDeviation.y * root.scaleFactor);
+                //root.__topLeftCorner = Qt.vector2d(root.dragStartScreenPos.x - root.__clickInitialDeviation.x * root.scaleFactor, root.dragStartScreenPos.y - root.__clickInitialDeviation.y * root.scaleFactor);
+                root.__topLeftCorner = Qt.vector2d(root.dragStartScreenPos.x - root.__clickInitialDeviation.x, root.dragStartScreenPos.y - root.__clickInitialDeviation.y);
                 root.__raycastDeviation = root.screenTargetCenterBase.minus(root.__topLeftCorner);
                 root.__testValue = Qt.vector2d(itemMouseArea.mapToItem(root.view, mouse.x, mouse.y).x, itemMouseArea.mapToItem(root.view, mouse.x, mouse.y).y);
                 root.initialTargetPosition = root.target.scenePosition;
@@ -234,7 +236,7 @@ Item {
         }
     }
 
-    Shape {
+    /*   Shape {
         anchors.fill: parent
         parent: Window.contentItem
         z: 1000000000
@@ -293,7 +295,7 @@ Item {
                 y: root.__topLeftCorner.y + root.__raycastDeviation.y * root.scaleFactor
             }
         }
-    }
+    }*/
 
     Shape {
         id: linkerShape
