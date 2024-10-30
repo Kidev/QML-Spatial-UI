@@ -40,17 +40,6 @@ else ()
     message(WARNING "Unknown compiler, no flags set.")
 endif ()
 
-if (EMSCRIPTEN)
-    target_compile_options(exampleExec PUBLIC -Os -DNDEBUG)
-endif ()
-
-set_target_properties(
-    exampleExec
-    PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER org.kidev.qtquick3d.tools
-               MACOSX_BUNDLE TRUE
-               WIN32_EXECUTABLE TRUE
-)
-
 target_link_libraries(
     exampleExec
     PRIVATE Qt6::Core
@@ -58,7 +47,20 @@ target_link_libraries(
             Qt6::Quick
             Qt6::Quick3D
             Qt6::Qml
-            qtquick3dtoolsplugin
+)
+
+if (EMSCRIPTEN)
+    target_link_libraries(exampleExec PUBLIC qtquick3dtoolsplugin)
+    target_compile_options(exampleExec PUBLIC -Os -DNDEBUG)
+else ()
+    target_link_libraries(exampleExec PUBLIC QtQuick3DTools)
+endif ()
+
+set_target_properties(
+    exampleExec
+    PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER org.kidev.qtquick3d.tools
+               MACOSX_BUNDLE TRUE
+               WIN32_EXECUTABLE TRUE
 )
 
 install(
