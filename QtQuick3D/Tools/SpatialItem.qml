@@ -63,6 +63,7 @@ Item {
     readonly property vector3d targetCenterBaseOffseted: root.targetCenterBase.plus(root.offsetLinkStart)
     readonly property vector3d targetCenterTop: root.target.scenePosition.plus(Qt.vector3d((root.target.bounds.minimum.x + root.target.bounds.maximum.x) / 2, root.target.bounds.maximum.y, (root.target.bounds.minimum.z + root.target.bounds.maximum.z) / 2).times(root.target.scale))
     readonly property vector3d targetCenterTopOffseted: root.targetCenterTop.plus(root.offsetLinkEnd)
+    property vector2d translationVector
     required property View3D view
     readonly property int zDistance: root.zOffset - Math.round(root.distance)
     readonly property int zOffset: 1000000000
@@ -76,11 +77,11 @@ Item {
         }
         const screenTargetCenterBaseOffseted = root.camera.mapToViewport(root.targetCenterBaseOffseted).times(root.screenSize).plus(root.offsetLinkStart2D);
         const screenTargetCenterTopOffseted = root.camera.mapToViewport(root.targetCenterTopOffseted).times(root.screenSize).plus(root.offsetLinkEnd2D);
+        const screenTargetCenterBase = root.camera.mapToViewport(root.targetCenterBase).times(root.screenSize);
+        root.screenTargetCenterBase = screenTargetCenterBase.z > 0 ? screenTargetCenterBase.toVector2d() : Qt.vector2d(-10000, -10000);
         root.screenTargetCenterBaseOffseted = screenTargetCenterBaseOffseted.z > 0 ? screenTargetCenterBaseOffseted.toVector2d() : Qt.vector2d(-10000, -10000);
         root.screenTargetCenterTopOffseted = screenTargetCenterTopOffseted.z > 0 ? screenTargetCenterTopOffseted.toVector2d() : Qt.vector2d(-10000, -10000);
         if (root.dragging) {
-            const screenTargetCenterBase = root.camera.mapToViewport(root.targetCenterBase).times(root.screenSize);
-            root.screenTargetCenterBase = screenTargetCenterBase.z > 0 ? screenTargetCenterBase.toVector2d() : Qt.vector2d(-10000, -10000);
             if (root.showDraggingLine) {
                 const screenInitialTargetCenterBase = root.camera.mapToViewport(root.initialTargetPosition).times(root.screenSize);
                 root.screenInitialTargetCenterBase = screenInitialTargetCenterBase.z > 0 ? screenInitialTargetCenterBase.toVector2d() : Qt.vector2d(-10000, -10000);
@@ -177,9 +178,8 @@ Item {
         onPositionChanged: mouse => {
             if (itemMouseArea.dragging) {
                 root.mouseArea.cursorShape = Qt.DragMoveCursor;
-                const currentPos = Qt.vector2d(root.x, root.y).plus(Qt.vector2d(mouse.x * root.scaleFactor, mouse.y * root.scaleFactor));
-                const pos = currentPos.minus(root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D).minus(root.screenTargetCenterBase)).minus(root.dragStartScreenPos.times(root.scaleFactor));
-                //console.log(pos);
+                const currentPos = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
+                const pos = Qt.vector2d(currentPos.x, currentPos.y).plus(root.translationVector);
                 const viewportX = pos.x / root.view.width;
                 const viewportY = pos.y / root.view.height;
                 const nearPoint = root.view.camera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
@@ -201,10 +201,9 @@ Item {
         }
         onPressed: mouse => {
             if (root.holdDragsTarget) {
-                const pos = Qt.vector2d(root.x, root.y).plus(Qt.vector2d(mouse.x * root.scaleFactor, mouse.y * root.scaleFactor));
-                //root.dragStartScreenPos = pos;
-                root.dragStartScreenPos = pos.minus(Qt.vector2d(root.x, root.y));
-                root.initialTargetPosition = root.targetCenterBaseOffseted;
+                root.dragStartScreenPos = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
+                root.initialTargetPosition = root.target.scenePosition;
+                root.translationVector = root.screenTargetCenterBase.minus(Qt.vector2d(root.dragStartScreenPos.x, root.dragStartScreenPos.y));
                 itemMouseArea.dragging = true;
                 root.mouseArea.cursorShape = Qt.ClosedHandCursor;
             }
