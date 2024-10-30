@@ -5,6 +5,11 @@ import QtQuick3D
 Item {
     id: root
 
+    property vector2d __clickInitialDeviation
+    property vector2d __raycastDeviation
+    property vector2d __startDeviation
+    property vector2d __testValue
+    property vector2d __topLeftCorner
     readonly property var camera: root.view.camera
     property bool closeUpScaling: false
     readonly property alias contentItem: contentItem
@@ -180,6 +185,8 @@ Item {
                 root.mouseArea.cursorShape = Qt.DragMoveCursor;
                 const currentPos = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
                 const pos = Qt.vector2d(currentPos.x, currentPos.y).plus(root.translationVector);
+                root.__testValue = Qt.vector2d(currentPos.x, currentPos.y);
+                root.__topLeftCorner = Qt.vector2d(currentPos.x, currentPos.y).minus(root.__clickInitialDeviation.times(root.scaleFactor));
                 const viewportX = pos.x / root.view.width;
                 const viewportY = pos.y / root.view.height;
                 const nearPoint = root.view.camera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
@@ -202,6 +209,10 @@ Item {
         onPressed: mouse => {
             if (root.holdDragsTarget) {
                 root.dragStartScreenPos = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
+                root.__clickInitialDeviation = Qt.vector2d(mouse.x, mouse.y);
+                root.__topLeftCorner = Qt.vector2d(root.dragStartScreenPos.x - root.__clickInitialDeviation.x * root.scaleFactor, root.dragStartScreenPos.y - root.__clickInitialDeviation.y * root.scaleFactor);
+                root.__raycastDeviation = root.screenTargetCenterBase.minus(root.__topLeftCorner);
+                root.__testValue = Qt.vector2d(itemMouseArea.mapToItem(root.view, mouse.x, mouse.y).x, itemMouseArea.mapToItem(root.view, mouse.x, mouse.y).y);
                 root.initialTargetPosition = root.target.scenePosition;
                 root.translationVector = root.screenTargetCenterBase.minus(Qt.vector2d(root.dragStartScreenPos.x, root.dragStartScreenPos.y));
                 itemMouseArea.dragging = true;
@@ -220,6 +231,67 @@ Item {
                 }
             }
             root.updateUIPosition();
+        }
+    }
+
+    Shape {
+        anchors.fill: parent
+        parent: Window.contentItem
+        z: 1000000000
+
+        ShapePath {
+            startX: root.__topLeftCorner.x
+            startY: root.__topLeftCorner.y
+            strokeColor: "purple"
+            strokeWidth: 2
+
+            PathLine {
+                x: root.__topLeftCorner.x + root.size.width * root.scaleFactor
+                y: root.__topLeftCorner.y
+            }
+
+            PathLine {
+                x: root.__topLeftCorner.x + root.size.width * root.scaleFactor
+                y: root.__topLeftCorner.y + root.size.height * root.scaleFactor
+            }
+
+            PathLine {
+                x: root.__topLeftCorner.x
+                y: root.__topLeftCorner.y + root.size.height * root.scaleFactor
+            }
+
+            PathLine {
+                x: root.__topLeftCorner.x
+                y: root.__topLeftCorner.y
+            }
+        }
+    }
+
+    Shape {
+        anchors.fill: parent
+        parent: Window.contentItem
+        z: 10000000000
+
+        ShapePath {
+            startX: root.dragStartScreenPos.x
+            startY: root.dragStartScreenPos.y
+            strokeColor: "red"
+            strokeWidth: 3
+
+            PathLine {
+                x: root.__testValue.x
+                y: root.__testValue.y
+            }
+
+            PathLine {
+                x: root.__topLeftCorner.x
+                y: root.__topLeftCorner.y
+            }
+
+            PathLine {
+                x: root.__topLeftCorner.x + root.__raycastDeviation.x * root.scaleFactor
+                y: root.__topLeftCorner.y + root.__raycastDeviation.y * root.scaleFactor
+            }
         }
     }
 
