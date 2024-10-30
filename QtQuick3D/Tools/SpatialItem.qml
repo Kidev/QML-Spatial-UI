@@ -177,8 +177,9 @@ Item {
         onPositionChanged: mouse => {
             if (itemMouseArea.dragging) {
                 root.mouseArea.cursorShape = Qt.DragMoveCursor;
-                const currentPos = Qt.vector2d(mouse.x, mouse.y).times(root.scaleFactor).plus(Qt.vector2d(root.x, root.y));
+                const currentPos = Qt.vector2d(root.x, root.y).plus(Qt.vector2d(mouse.x * root.scaleFactor, mouse.y * root.scaleFactor));
                 const pos = currentPos.minus(root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D).minus(root.screenTargetCenterBase)).minus(root.dragStartScreenPos.times(root.scaleFactor));
+                //console.log(pos);
                 const viewportX = pos.x / root.view.width;
                 const viewportY = pos.y / root.view.height;
                 const nearPoint = root.view.camera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
@@ -200,7 +201,8 @@ Item {
         }
         onPressed: mouse => {
             if (root.holdDragsTarget) {
-                const pos = Qt.vector2d(mouse.x, mouse.y).times(root.scaleFactor).plus(Qt.vector2d(root.x, root.y));
+                const pos = Qt.vector2d(root.x, root.y).plus(Qt.vector2d(mouse.x * root.scaleFactor, mouse.y * root.scaleFactor));
+                //root.dragStartScreenPos = pos;
                 root.dragStartScreenPos = pos.minus(Qt.vector2d(root.x, root.y));
                 root.initialTargetPosition = root.targetCenterBaseOffseted;
                 itemMouseArea.dragging = true;

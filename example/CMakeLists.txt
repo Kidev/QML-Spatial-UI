@@ -58,7 +58,7 @@ target_link_libraries(
             Qt6::Quick
             Qt6::Quick3D
             Qt6::Qml
-            QtQuick3DTools
+            qtquick3dtoolsplugin
 )
 
 install(
