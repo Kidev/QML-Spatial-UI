@@ -247,7 +247,7 @@ Window {
         hoverEnabled: true
         mouseEnabled: true
         mouseLinkerEnabled: true
-        offsetLinkEnd: spatialUI.holdDragsTarget ? Qt.vector3d(0, 150, 50) : Qt.vector3d(-spatialUI.size.width / 2, 150, -spatialUI.size.width / 2)
+        offsetLinkEnd: spatialUI.holdDragsTarget ? Qt.vector3d(0, 150, 0) : Qt.vector3d(0, 150, 0)
         offsetLinkEnd2D: Qt.vector2d(0, 0)
         offsetLinkStart: spatialUI.holdDragsTarget ? Qt.vector3d(0, 50, 0) : Qt.vector3d(0, 50, 0)
         offsetLinkStart2D: Qt.vector2d(0, 0)

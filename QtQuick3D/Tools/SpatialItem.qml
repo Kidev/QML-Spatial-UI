@@ -8,7 +8,7 @@ Item {
     property vector2d __clickInitialDeviation
     property vector2d __raycastDeviation
     property vector2d __startDeviation
-    property vector2d __testValue
+    //property vector2d __testValue
     property vector2d __topLeftCorner: root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D)
     readonly property var camera: root.view.camera
     property bool closeUpScaling: false
@@ -27,7 +27,7 @@ Item {
     readonly property bool hovered: itemMouseArea.containsMouse
     property vector3d initialTargetPosition
     property alias linker: linkerShape.data
-    readonly property vector2d linkerEnd: root.__topLeftCorner.plus(Qt.vector2d(root.size.width / 2, root.size.height / 2).times(root.scaleFactor))
+    readonly property vector2d linkerEnd: root.__topLeftCorner //.plus(Qt.vector2d(root.size.width / 2, root.size.height / 2).times(root.scaleFactor))
     readonly property vector2d linkerStart: root.screenTargetCenterBaseOffseted
     readonly property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
@@ -96,8 +96,8 @@ Item {
 
     height: root.size.height
     width: root.size.width
-    x: root.__topLeftCorner.x
-    y: root.__topLeftCorner.y
+    x: root.coords.x
+    y: root.coords.y
     z: root.forceTopStacking ? root.zOffset + 1 : (root.depthTest ? root.zDistance : root.stackingOrder)
 
     transform: Scale {
@@ -183,10 +183,8 @@ Item {
         onPositionChanged: mouse => {
             if (itemMouseArea.dragging) {
                 root.mouseArea.cursorShape = Qt.DragMoveCursor;
-                const currentPos = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
-                root.__testValue = Qt.vector2d(currentPos.x, currentPos.y);
-                //root.__topLeftCorner = Qt.vector2d(currentPos.x, currentPos.y).minus(root.__clickInitialDeviation.times(root.scaleFactor));
-                root.__topLeftCorner = Qt.vector2d(currentPos.x, currentPos.y).minus(root.__clickInitialDeviation);
+                const currentPos = Qt.vector2d(mouse.x, mouse.y);
+                root.__topLeftCorner = root.__topLeftCorner.plus(currentPos.times(root.scaleFactor));
                 const pos = root.__topLeftCorner.plus(root.__raycastDeviation.times(root.scaleFactor));
                 const viewportX = pos.x / root.view.width;
                 const viewportY = pos.y / root.view.height;
@@ -205,16 +203,15 @@ Item {
                         root.target.position = Qt.vector3d(intersection.x, root.initialTargetPosition.y, intersection.z);
                     }
                 }
+                root.updateUIPosition();
             }
         }
         onPressed: mouse => {
             if (root.holdDragsTarget) {
-                root.dragStartScreenPos = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
-                root.__clickInitialDeviation = Qt.vector2d(mouse.x, mouse.y);
-                //root.__topLeftCorner = Qt.vector2d(root.dragStartScreenPos.x - root.__clickInitialDeviation.x * root.scaleFactor, root.dragStartScreenPos.y - root.__clickInitialDeviation.y * root.scaleFactor);
-                root.__topLeftCorner = Qt.vector2d(root.dragStartScreenPos.x - root.__clickInitialDeviation.x, root.dragStartScreenPos.y - root.__clickInitialDeviation.y);
+                root.dragStartScreenPos = Qt.vector2d(mouse.x, mouse.y);
+                root.__clickInitialDeviation = itemMouseArea.mapToItem(root.view, root.dragStartScreenPos.x, root.dragStartScreenPos.y);
+                root.__topLeftCorner = root.__clickInitialDeviation.minus(root.dragStartScreenPos.times(root.scaleFactor));
                 root.__raycastDeviation = root.screenTargetCenterBase.minus(root.__topLeftCorner);
-                root.__testValue = Qt.vector2d(itemMouseArea.mapToItem(root.view, mouse.x, mouse.y).x, itemMouseArea.mapToItem(root.view, mouse.x, mouse.y).y);
                 root.initialTargetPosition = root.target.scenePosition;
                 root.translationVector = root.screenTargetCenterBase.minus(Qt.vector2d(root.dragStartScreenPos.x, root.dragStartScreenPos.y));
                 itemMouseArea.dragging = true;
