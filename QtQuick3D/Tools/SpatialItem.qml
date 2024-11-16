@@ -8,12 +8,10 @@ Item {
     property vector2d __clickInitialDeviation
     property vector2d __raycastDeviation
     property vector2d __startDeviation
-    //property vector2d __testValue
-    property vector2d __topLeftCorner: root.screenTargetOffsetedCenterTop
     readonly property var camera: root.view.camera
     property bool closeUpScaling: false
     readonly property alias contentItem: contentItem
-    readonly property vector2d coords: root.screenTargetOffsetedCenterTop
+    readonly property vector2d coords: root.screenTargetOffsetedCenterTop.plus(root.offsetLinkEnd2D)
     property int cursor: Qt.ArrowCursor
     default property alias data: contentItem.data
     property bool depthTest: false
@@ -28,7 +26,7 @@ Item {
     readonly property bool hovered: itemMouseArea.containsMouse
     property vector3d initialTargetPosition
     property alias linker: linkerShape.data
-    readonly property vector2d linkerEnd: root.screenTargetOffsetedCenterTop.plus(Qt.vector2d(root.size.width / 2, root.size.height / 2).times(root.scaleFactor)).plus(root.offsetLinkEnd2D)
+    readonly property vector2d linkerEnd: root.coords
     readonly property vector2d linkerStart: root.screenTargetOffsetedCenterBase.plus(root.offsetLinkStart2D)
     readonly property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
@@ -69,6 +67,7 @@ Item {
     readonly property vector3d targetCenterBaseOffseted: root.targetCenterBase.plus(root.offsetLinkStart)
     readonly property vector3d targetCenterTop: root.target.scenePosition.plus(Qt.vector3d((root.target.bounds.minimum.x + root.target.bounds.maximum.x) / 2, root.target.bounds.maximum.y, (root.target.bounds.minimum.z + root.target.bounds.maximum.z) / 2).times(root.target.scale))
     readonly property vector3d targetCenterTopOffseted: root.targetCenterTop.plus(root.offsetLinkEnd)
+    property vector2d topLeftCorner: root.screenTargetOffsetedCenterTop
     property vector2d translationVector
     required property View3D view
     readonly property int zDistance: root.zOffset - Math.round(root.distance)
@@ -109,8 +108,8 @@ Item {
             yScale: root.scaleFactor
         },
         Translate {
-            x: -root.size.width / 2
-            y: -root.size.height / 2
+            x: (root.offsetLinkEnd2D.x - root.size.width / 2)
+            y: (root.offsetLinkEnd2D.y - root.size.height / 2)
         }
     ]
 
@@ -220,8 +219,8 @@ Item {
                 root.dragStartScreenPos = Qt.vector2d(current.x, current.y);
                 root.dragLastScreenPos = Qt.vector2d(current.x, current.y);
                 root.__clickInitialDeviation = Qt.vector2d(current.x, current.y);
-                root.__topLeftCorner = root.dragLastScreenPos.minus(root.dragStartScreenPos.times(root.scaleFactor));
-                root.__raycastDeviation = root.screenTargetCenterBase.minus(root.__topLeftCorner);
+                root.topLeftCorner = root.dragLastScreenPos.minus(root.dragStartScreenPos.times(root.scaleFactor));
+                root.__raycastDeviation = root.screenTargetCenterBase.minus(root.topLeftCorner);
                 root.initialTargetPosition = root.target.scenePosition;
                 root.translationVector = root.screenTargetCenterBase.minus(Qt.vector2d(root.dragStartScreenPos.x, root.dragStartScreenPos.y));
                 itemMouseArea.dragging = true;
@@ -242,67 +241,6 @@ Item {
             root.updateUIPosition();
         }
     }
-
-    /*   Shape {
-        anchors.fill: parent
-        parent: Window.contentItem
-        z: 1000000000
-
-        ShapePath {
-            startX: root.__topLeftCorner.x
-            startY: root.__topLeftCorner.y
-            strokeColor: "purple"
-            strokeWidth: 2
-
-            PathLine {
-                x: root.__topLeftCorner.x + root.size.width * root.scaleFactor
-                y: root.__topLeftCorner.y
-            }
-
-            PathLine {
-                x: root.__topLeftCorner.x + root.size.width * root.scaleFactor
-                y: root.__topLeftCorner.y + root.size.height * root.scaleFactor
-            }
-
-            PathLine {
-                x: root.__topLeftCorner.x
-                y: root.__topLeftCorner.y + root.size.height * root.scaleFactor
-            }
-
-            PathLine {
-                x: root.__topLeftCorner.x
-                y: root.__topLeftCorner.y
-            }
-        }
-    }
-
-    Shape {
-        anchors.fill: parent
-        parent: Window.contentItem
-        z: 10000000000
-
-        ShapePath {
-            startX: root.dragStartScreenPos.x
-            startY: root.dragStartScreenPos.y
-            strokeColor: "red"
-            strokeWidth: 3
-
-            PathLine {
-                x: root.__testValue.x
-                y: root.__testValue.y
-            }
-
-            PathLine {
-                x: root.__topLeftCorner.x
-                y: root.__topLeftCorner.y
-            }
-
-            PathLine {
-                x: root.__topLeftCorner.x + root.__raycastDeviation.x * root.scaleFactor
-                y: root.__topLeftCorner.y + root.__raycastDeviation.y * root.scaleFactor
-            }
-        }
-    }*/
 
     Shape {
         id: linkerShape

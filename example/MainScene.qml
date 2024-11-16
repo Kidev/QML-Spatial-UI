@@ -248,7 +248,7 @@ Window {
         mouseEnabled: true
         mouseLinkerEnabled: true
         offsetLinkEnd: Qt.vector3d(0, 150, 0)
-        offsetLinkEnd2D: Qt.vector2d(-spatialUI.size.width * spatialUI.scaleFactor / 2, 0)
+        offsetLinkEnd2D: Qt.vector2d(0, 0)
         offsetLinkStart: Qt.vector3d(0, 50, 0)
         offsetLinkStart2D: Qt.vector2d(0, 0)
         showDraggingLine: true
@@ -371,9 +371,9 @@ Window {
         hoverEnabled: true
         mouseEnabled: true
         mouseLinkerEnabled: true
-        offsetLinkEnd: Qt.vector3d(0, 150, 0)
-        offsetLinkEnd2D: Qt.vector2d(-spatialNameTag.size.width * spatialNameTag.scaleFactor / 2, 0)
-        offsetLinkStart: Qt.vector3d(0, 50, 0)
+        offsetLinkEnd: Qt.vector3d(0, 50, 0)
+        offsetLinkEnd2D: Qt.vector2d(spatialNameTag.size.width * spatialNameTag.scaleFactor / 4, 1 - spatialNameTag.size.height * spatialNameTag.scaleFactor / 2)
+        offsetLinkStart: Qt.vector3d(0, (targetHuman.bounds.maximum.y - targetHuman.bounds.minimum.y) * targetHuman.scale.y, 0)
         offsetLinkStart2D: Qt.vector2d(0, 0)
         showLinker: true
         size: Qt.size(200, 50)
