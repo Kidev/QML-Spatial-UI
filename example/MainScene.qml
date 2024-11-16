@@ -247,9 +247,9 @@ Window {
         hoverEnabled: true
         mouseEnabled: true
         mouseLinkerEnabled: true
-        offsetLinkEnd: spatialUI.holdDragsTarget ? Qt.vector3d(0, 150, 0) : Qt.vector3d(0, 150, 0)
-        offsetLinkEnd2D: Qt.vector2d(0, 0)
-        offsetLinkStart: spatialUI.holdDragsTarget ? Qt.vector3d(0, 50, 0) : Qt.vector3d(0, 50, 0)
+        offsetLinkEnd: Qt.vector3d(0, 150, 0)
+        offsetLinkEnd2D: Qt.vector2d(-spatialUI.size.width * spatialUI.scaleFactor / 2, 0)
+        offsetLinkStart: Qt.vector3d(0, 50, 0)
         offsetLinkStart2D: Qt.vector2d(0, 0)
         showDraggingLine: true
         showLinker: spatialUI.holdDragsTarget
@@ -371,9 +371,9 @@ Window {
         hoverEnabled: true
         mouseEnabled: true
         mouseLinkerEnabled: true
-        offsetLinkEnd: Qt.vector3d(0, 150, 50)
-        offsetLinkEnd2D: Qt.vector2d(0, 0)
-        offsetLinkStart: Qt.vector3d(0, 125, 0)
+        offsetLinkEnd: Qt.vector3d(0, 150, 0)
+        offsetLinkEnd2D: Qt.vector2d(-spatialNameTag.size.width * spatialNameTag.scaleFactor / 2, 0)
+        offsetLinkStart: Qt.vector3d(0, 50, 0)
         offsetLinkStart2D: Qt.vector2d(0, 0)
         showLinker: true
         size: Qt.size(200, 50)
@@ -387,7 +387,7 @@ Window {
                 fillColor: "white"
                 joinStyle: ShapePath.BevelJoin
                 startX: spatialNameTag.linkerEnd.x - (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
-                startY: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
+                startY: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor)
                 strokeColor: uiRectangle.border.color
                 strokeWidth: uiRectangle.border.width * spatialNameTag.scaleFactor
 
@@ -398,7 +398,7 @@ Window {
 
                 PathLine {
                     x: spatialNameTag.linkerEnd.x + (0.1 * uiRectangle.width) * spatialNameTag.scaleFactor
-                    y: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor) + (uiRectangle.height / 2) * spatialNameTag.scaleFactor
+                    y: spatialNameTag.linkerEnd.y - 1 - (uiRectangle.border.width * spatialNameTag.scaleFactor)
                 }
             }
         ]

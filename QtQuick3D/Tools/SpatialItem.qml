@@ -9,15 +9,16 @@ Item {
     property vector2d __raycastDeviation
     property vector2d __startDeviation
     //property vector2d __testValue
-    property vector2d __topLeftCorner: root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D)
+    property vector2d __topLeftCorner: root.screenTargetOffsetedCenterTop
     readonly property var camera: root.view.camera
     property bool closeUpScaling: false
     readonly property alias contentItem: contentItem
-    readonly property vector2d coords: root.screenTargetCenterTopOffseted.plus(root.offsetLinkEnd2D)
+    readonly property vector2d coords: root.screenTargetOffsetedCenterTop
     property int cursor: Qt.ArrowCursor
     default property alias data: contentItem.data
     property bool depthTest: false
     readonly property real distance: root.camera ? root.camera.scenePosition.minus(root.target.scenePosition).length() : 0
+    property vector2d dragLastScreenPos
     property vector2d dragStartScreenPos
     readonly property bool dragging: itemMouseArea.dragging
     property bool fixedSize: false
@@ -27,8 +28,8 @@ Item {
     readonly property bool hovered: itemMouseArea.containsMouse
     property vector3d initialTargetPosition
     property alias linker: linkerShape.data
-    readonly property vector2d linkerEnd: root.__topLeftCorner //.plus(Qt.vector2d(root.size.width / 2, root.size.height / 2).times(root.scaleFactor))
-    readonly property vector2d linkerStart: root.screenTargetCenterBaseOffseted
+    readonly property vector2d linkerEnd: root.screenTargetOffsetedCenterTop.plus(Qt.vector2d(root.size.width / 2, root.size.height / 2).times(root.scaleFactor)).plus(root.offsetLinkEnd2D)
+    readonly property vector2d linkerStart: root.screenTargetOffsetedCenterBase.plus(root.offsetLinkStart2D)
     readonly property alias mouseArea: itemMouseArea
     property bool mouseEnabled: false
     property bool mouseLinkerEnabled: false
@@ -56,8 +57,8 @@ Item {
     property vector2d screenInitialTargetCenterBase
     readonly property vector3d screenSize: Qt.vector3d(Window.width, Window.height, 1)
     property vector2d screenTargetCenterBase
-    property vector2d screenTargetCenterBaseOffseted
-    property vector2d screenTargetCenterTopOffseted
+    property vector2d screenTargetOffsetedCenterBase
+    property vector2d screenTargetOffsetedCenterTop
     property bool showDraggingLine: false
     property bool showLinker: false
     required property size size
@@ -80,12 +81,12 @@ Item {
         if (!root.view || !root.camera || !root.target) {
             return;
         }
-        const screenTargetCenterBaseOffseted = root.camera.mapToViewport(root.targetCenterBaseOffseted).times(root.screenSize).plus(root.offsetLinkStart2D);
-        const screenTargetCenterTopOffseted = root.camera.mapToViewport(root.targetCenterTopOffseted).times(root.screenSize).plus(root.offsetLinkEnd2D);
+        const screenTargetOffsetedCenterBase = root.camera.mapToViewport(root.targetCenterBaseOffseted).times(root.screenSize);
+        const screenTargetOffsetedCenterTop = root.camera.mapToViewport(root.targetCenterTopOffseted).times(root.screenSize);
         const screenTargetCenterBase = root.camera.mapToViewport(root.targetCenterBase).times(root.screenSize);
         root.screenTargetCenterBase = screenTargetCenterBase.z > 0 ? screenTargetCenterBase.toVector2d() : Qt.vector2d(-10000, -10000);
-        root.screenTargetCenterBaseOffseted = screenTargetCenterBaseOffseted.z > 0 ? screenTargetCenterBaseOffseted.toVector2d() : Qt.vector2d(-10000, -10000);
-        root.screenTargetCenterTopOffseted = screenTargetCenterTopOffseted.z > 0 ? screenTargetCenterTopOffseted.toVector2d() : Qt.vector2d(-10000, -10000);
+        root.screenTargetOffsetedCenterBase = screenTargetOffsetedCenterBase.z > 0 ? screenTargetOffsetedCenterBase.toVector2d() : Qt.vector2d(-10000, -10000);
+        root.screenTargetOffsetedCenterTop = screenTargetOffsetedCenterTop.z > 0 ? screenTargetOffsetedCenterTop.toVector2d() : Qt.vector2d(-10000, -10000);
         if (root.dragging) {
             if (root.showDraggingLine) {
                 const screenInitialTargetCenterBase = root.camera.mapToViewport(root.initialTargetPosition).times(root.screenSize);
@@ -100,12 +101,18 @@ Item {
     y: root.coords.y
     z: root.forceTopStacking ? root.zOffset + 1 : (root.depthTest ? root.zDistance : root.stackingOrder)
 
-    transform: Scale {
-        origin.x: 0//root.size.width / 2
-        origin.y: 0//root.size.height / 2
-        xScale: root.scaleFactor
-        yScale: root.scaleFactor
-    }
+    transform: [
+        Scale {
+            origin.x: root.size.width / 2
+            origin.y: root.size.height / 2
+            xScale: root.scaleFactor
+            yScale: root.scaleFactor
+        },
+        Translate {
+            x: -root.size.width / 2
+            y: -root.size.height / 2
+        }
+    ]
 
     Component.onCompleted: Qt.callLater(root.updateUIPosition)
     Window.onHeightChanged: Qt.callLater(root.updateUIPosition)
@@ -184,8 +191,9 @@ Item {
             if (itemMouseArea.dragging) {
                 root.mouseArea.cursorShape = Qt.DragMoveCursor;
                 const currentPos = Qt.vector2d(mouse.x, mouse.y);
-                root.__topLeftCorner = root.__topLeftCorner.plus(currentPos.times(root.scaleFactor));
-                const pos = root.__topLeftCorner.plus(root.__raycastDeviation.times(root.scaleFactor));
+                const currentVector = currentPos.minus(root.dragLastScreenPos);
+                root.dragLastScreenPos = currentPos;
+                const pos = root.screenTargetCenterBase.plus(currentVector.times(root.scaleFactor));
                 const viewportX = pos.x / root.view.width;
                 const viewportY = pos.y / root.view.height;
                 const nearPoint = root.view.camera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
@@ -203,14 +211,16 @@ Item {
                         root.target.position = Qt.vector3d(intersection.x, root.initialTargetPosition.y, intersection.z);
                     }
                 }
-                root.updateUIPosition();
+                //root.updateUIPosition();
             }
         }
         onPressed: mouse => {
             if (root.holdDragsTarget) {
-                root.dragStartScreenPos = Qt.vector2d(mouse.x, mouse.y);
-                root.__clickInitialDeviation = itemMouseArea.mapToItem(root.view, root.dragStartScreenPos.x, root.dragStartScreenPos.y);
-                root.__topLeftCorner = root.__clickInitialDeviation.minus(root.dragStartScreenPos.times(root.scaleFactor));
+                const current = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
+                root.dragStartScreenPos = Qt.vector2d(current.x, current.y);
+                root.dragLastScreenPos = Qt.vector2d(current.x, current.y);
+                root.__clickInitialDeviation = Qt.vector2d(current.x, current.y);
+                root.__topLeftCorner = root.dragLastScreenPos.minus(root.dragStartScreenPos.times(root.scaleFactor));
                 root.__raycastDeviation = root.screenTargetCenterBase.minus(root.__topLeftCorner);
                 root.initialTargetPosition = root.target.scenePosition;
                 root.translationVector = root.screenTargetCenterBase.minus(Qt.vector2d(root.dragStartScreenPos.x, root.dragStartScreenPos.y));
@@ -318,8 +328,8 @@ Item {
             strokeWidth: 3
 
             PathLine {
-                x: root.screenTargetCenterBaseOffseted.x
-                y: root.screenTargetCenterBaseOffseted.y
+                x: root.screenTargetOffsetedCenterBase.x
+                y: root.screenTargetOffsetedCenterBase.y
             }
         }
     }
