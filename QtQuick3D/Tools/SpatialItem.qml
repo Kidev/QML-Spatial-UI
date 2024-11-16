@@ -5,9 +5,6 @@ import QtQuick3D
 Item {
     id: root
 
-    property vector2d __clickInitialDeviation
-    property vector2d __raycastDeviation
-    property vector2d __startDeviation
     readonly property var camera: root.view.camera
     property bool closeUpScaling: false
     readonly property alias contentItem: contentItem
@@ -200,17 +197,17 @@ Item {
                 const ray_start = nearPoint;
                 const ray_direction = farPoint.minus(nearPoint).normalized();
                 const planeYPosition = 0;
-                const plane_normal = Qt.vector3d(0, 1, 0);
-                const plane_point = Qt.vector3d(0, planeYPosition, 0);
+                const plane_normal = Qt.vector3d(0, 1.0, 0);
+                const plane_point = Qt.vector3d(0.0, planeYPosition, 0.0);
                 const denominator = ray_direction.dotProduct(plane_normal);
-                if (Math.abs(denominator) > 0.0001) {
+                if (Math.abs(denominator) >= 0.000001) {
                     const t = plane_point.minus(ray_start).dotProduct(plane_normal) / denominator;
                     if (t >= 0) {
                         const intersection = ray_start.plus(ray_direction.times(t));
                         root.target.position = Qt.vector3d(intersection.x, root.initialTargetPosition.y, intersection.z);
                     }
                 }
-                //root.updateUIPosition();
+                root.updateUIPosition();
             }
         }
         onPressed: mouse => {
@@ -218,9 +215,7 @@ Item {
                 const current = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
                 root.dragStartScreenPos = Qt.vector2d(current.x, current.y);
                 root.dragLastScreenPos = Qt.vector2d(current.x, current.y);
-                root.__clickInitialDeviation = Qt.vector2d(current.x, current.y);
                 root.topLeftCorner = root.dragLastScreenPos.minus(root.dragStartScreenPos.times(root.scaleFactor));
-                root.__raycastDeviation = root.screenTargetCenterBase.minus(root.topLeftCorner);
                 root.initialTargetPosition = root.target.scenePosition;
                 root.translationVector = root.screenTargetCenterBase.minus(Qt.vector2d(root.dragStartScreenPos.x, root.dragStartScreenPos.y));
                 itemMouseArea.dragging = true;
