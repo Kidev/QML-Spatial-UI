@@ -13,7 +13,6 @@ Item {
     default property alias data: contentItem.data
     property bool depthTest: false
     readonly property real distance: root.camera ? root.camera.scenePosition.minus(root.target.scenePosition).length() : 0
-    property vector2d dragLastScreenPos
     property vector2d dragStartScreenPos
     readonly property bool dragging: itemMouseArea.dragging
     property bool fixedSize: false
@@ -22,6 +21,7 @@ Item {
     property bool hoverEnabled: false
     readonly property bool hovered: itemMouseArea.containsMouse
     property vector3d initialTargetPosition
+    property vector2d initialTargetScreenPosition
     property alias linker: linkerShape.data
     readonly property vector2d linkerEnd: root.coords
     readonly property vector2d linkerStart: root.screenTargetOffsetedCenterBase.plus(root.offsetLinkStart2D)
@@ -65,7 +65,6 @@ Item {
     readonly property vector3d targetCenterTop: root.target.scenePosition.plus(Qt.vector3d((root.target.bounds.minimum.x + root.target.bounds.maximum.x) / 2, root.target.bounds.maximum.y, (root.target.bounds.minimum.z + root.target.bounds.maximum.z) / 2).times(root.target.scale))
     readonly property vector3d targetCenterTopOffseted: root.targetCenterTop.plus(root.offsetLinkEnd)
     property vector2d topLeftCorner: root.screenTargetOffsetedCenterTop
-    property vector2d translationVector
     required property View3D view
     readonly property int zDistance: root.zOffset - Math.round(root.distance)
     readonly property int zOffset: 1000000000
@@ -187,41 +186,41 @@ Item {
             if (itemMouseArea.dragging) {
                 root.mouseArea.cursorShape = Qt.DragMoveCursor;
                 const currentPos = Qt.vector2d(mouse.x, mouse.y);
-                const currentVector = currentPos.minus(root.dragLastScreenPos);
-                root.dragLastScreenPos = currentPos;
-                const pos = root.screenTargetCenterBase.plus(currentVector.times(root.scaleFactor));
+                const currentVector = currentPos.minus(root.dragStartScreenPos);
+                const pos = root.initialTargetScreenPosition.plus(currentVector.times(root.scaleFactor));
                 const viewportX = pos.x / root.view.width;
                 const viewportY = pos.y / root.view.height;
                 const nearPoint = root.view.camera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 0));
                 const farPoint = root.view.camera.mapFromViewport(Qt.vector3d(viewportX, viewportY, 1));
                 const ray_start = nearPoint;
                 const ray_direction = farPoint.minus(nearPoint).normalized();
-                const planeYPosition = 0;
                 const plane_normal = Qt.vector3d(0, 1.0, 0);
-                const plane_point = Qt.vector3d(0.0, planeYPosition, 0.0);
+                const plane_point = Qt.vector3d(0.0, root.initialTargetPosition.y, 0.0);
                 const denominator = ray_direction.dotProduct(plane_normal);
                 if (Math.abs(denominator) >= 0.000001) {
                     const t = plane_point.minus(ray_start).dotProduct(plane_normal) / denominator;
                     if (t >= 0) {
-                        const intersection = ray_start.plus(ray_direction.times(t));
-                        root.target.position = Qt.vector3d(intersection.x, root.initialTargetPosition.y, intersection.z);
+                        const worldIntersection = ray_start.plus(ray_direction.times(t));
+                        //const worldDelta = worldIntersection.minus(root.initialTargetPosition);
+                        root.target.position = root.initialTargetPosition.plus(worldIntersection);
                     }
                 }
-                root.updateUIPosition();
+                //root.updateUIPosition();
             }
         }
         onPressed: mouse => {
             if (root.holdDragsTarget) {
+                root.updateUIPosition();
                 const current = itemMouseArea.mapToItem(root.view, mouse.x, mouse.y);
+                const currentTargetOnScreen = itemMouseArea.mapToItem(root.view, root.screenTargetCenterBase.x, root.screenTargetCenterBase.y);
                 root.dragStartScreenPos = Qt.vector2d(current.x, current.y);
-                root.dragLastScreenPos = Qt.vector2d(current.x, current.y);
-                root.topLeftCorner = root.dragLastScreenPos.minus(root.dragStartScreenPos.times(root.scaleFactor));
-                root.initialTargetPosition = root.target.scenePosition;
-                root.translationVector = root.screenTargetCenterBase.minus(Qt.vector2d(root.dragStartScreenPos.x, root.dragStartScreenPos.y));
+                root.topLeftCorner = root.dragStartScreenPos.minus(root.dragStartScreenPos.times(root.scaleFactor));
+                root.initialTargetPosition = root.target.position;
+                root.initialTargetScreenPosition = Qt.vector2d(currentTargetOnScreen.x, currentTargetOnScreen.y);
                 itemMouseArea.dragging = true;
                 root.mouseArea.cursorShape = Qt.ClosedHandCursor;
+                root.updateUIPosition();
             }
-            root.updateUIPosition();
         }
         onReleased: () => {
             itemMouseArea.dragging = false;
