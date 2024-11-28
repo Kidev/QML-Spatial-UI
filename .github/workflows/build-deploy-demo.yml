@@ -11,7 +11,7 @@ jobs:
     env:
       workspace_root: '/home/runner/work/QtQuick3D-Tools/QtQuick3D-Tools'
       qt_version: '6.8.0'
-      qt_host_arch: 'linux_gcc_64'
+      qt_host_arch: 'gcc_64'
       qt_target_arch: 'wasm_singlethread'
       qt_modules: 'qtquick3d qtquicktimeline qtshadertools'
       qt_root: '/home/runner/work/QtQuick3D-Tools/QtQuick3D-Tools/Qt'
@@ -53,7 +53,7 @@ jobs:
           host: 'linux'
           target: 'desktop'
           set-env: 'false'
-          arch: ${{ env.qt_host_arch }}
+          arch: 'linux_gcc_64'
           dir: ${{ env.workspace_root }}
           modules: ${{ env.qt_modules }}
           cache: 'true'
