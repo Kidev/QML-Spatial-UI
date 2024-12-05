@@ -10,7 +10,7 @@ jobs:
     name: "Build and deploy"
     env:
       workspace_root: '/home/runner/work/QtQuick3D-Tools/QtQuick3D-Tools'
-      qt_version: '6.8.0'
+      qt_version: '6.8.1'
       qt_host_arch: 'gcc_64'
       qt_target_arch: 'wasm_singlethread'
       qt_modules: 'qtquick3d qtquicktimeline qtshadertools'
@@ -58,7 +58,7 @@ jobs:
           modules: ${{ env.qt_modules }}
           cache: 'true'
           cache-key-prefix: 'install-qt-host'
-          aqtsource: 'git+https://github.com/Kidev/aqtinstall.git'
+          aqtsource: 'git+https://github.com/Kidev/aqtinstall.git@wasm'
 
       - name: Install Qt for target architecture
         uses: jurplel/install-qt-action@v4.1.1
@@ -72,7 +72,7 @@ jobs:
           modules: ${{ env.qt_modules }}
           cache: 'true'
           cache-key-prefix: 'install-qt-target'
-          aqtsource: 'git+https://github.com/Kidev/aqtinstall.git'
+          aqtsource: 'git+https://github.com/Kidev/aqtinstall.git@wasm'
 
       - name: CMake Build
         shell: bash
