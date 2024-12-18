@@ -51,7 +51,7 @@ jobs:
           version: ${{ env.qt_version }}
           host: 'all_os'
           target: 'wasm'
-          #set-env: 'false'
+          set-env: 'true'
           arch: 'wasm_singlethread'
           dir: ${{ env.workspace_root }}
           modules: ${{ env.qt_modules }}
