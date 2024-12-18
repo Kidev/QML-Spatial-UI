@@ -51,12 +51,10 @@ jobs:
           version: ${{ env.qt_version }}
           host: 'all_os'
           target: 'wasm'
-          set-env: 'true'
+          set-env: 'false'
           arch: 'wasm_singlethread'
           dir: ${{ env.workspace_root }}
           modules: ${{ env.qt_modules }}
-          cache: 'true'
-          cache-key-prefix: 'install-qt-host'
           extra: '--autodesktop'
           aqtsource: 'git+https://github.com/Kidev/aqtinstall.git@wasm'
 
