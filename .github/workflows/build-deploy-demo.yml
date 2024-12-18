@@ -47,7 +47,7 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@v5
 
       - name: Install Qt for host architecture
-        uses: jurplel/install-qt-action@v4.1.1
+        uses: Kidev/install-qt-action@v4.2.0
         with:
           version: ${{ env.qt_version }}
           host: 'all_os'
