@@ -50,28 +50,15 @@ jobs:
         uses: jurplel/install-qt-action@v4.1.1
         with:
           version: ${{ env.qt_version }}
-          host: 'linux'
-          target: 'desktop'
-          set-env: 'false'
-          arch: 'linux_gcc_64'
+          host: 'all_os'
+          target: 'wasm'
+          #set-env: 'false'
+          arch: 'wasm_singlethread'
           dir: ${{ env.workspace_root }}
           modules: ${{ env.qt_modules }}
           cache: 'true'
           cache-key-prefix: 'install-qt-host'
-          aqtsource: 'git+https://github.com/Kidev/aqtinstall.git@wasm'
-
-      - name: Install Qt for target architecture
-        uses: jurplel/install-qt-action@v4.1.1
-        with:
-          version: ${{ env.qt_version }}
-          host: 'linux'
-          target: 'desktop'
-          set-env: 'true'
-          arch: ${{ env.qt_target_arch }}
-          dir: ${{ env.workspace_root }}
-          modules: ${{ env.qt_modules }}
-          cache: 'true'
-          cache-key-prefix: 'install-qt-target'
+          extra: '--autodesktop'
           aqtsource: 'git+https://github.com/Kidev/aqtinstall.git@wasm'
 
       - name: CMake Build
