@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 1
           submodules: 'recursive'
           lfs: 'true'
-
+ 
       - name: Install tools
         shell: bash
         run: |
