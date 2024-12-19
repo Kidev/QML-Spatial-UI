@@ -57,7 +57,7 @@ jobs:
           modules: ${{ env.qt_modules }}
           extra: '--autodesktop'
           aqtsource: 'git+https://github.com/Kidev/aqtinstall.git@wasm'
-
+ 
       - name: CMake Build
         shell: bash
         run: |
