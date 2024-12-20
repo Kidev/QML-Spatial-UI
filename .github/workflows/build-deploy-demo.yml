@@ -12,7 +12,7 @@ jobs:
       qt_version: '6.8.1'
       qt_host_arch: 'gcc_64'
       qt_target_arch: 'wasm_singlethread'
-      qt_modules: 'all'
+      qt_modules: 'qtquick3d qtshadertools'
       qt_root: '/home/runner/work/QtQuick3D-Tools/QtQuick3D-Tools/Qt'
       target_folder: 'QtQuick3D-Tools'
       source_folder: '/home/runner/work/QtQuick3D-Tools/QtQuick3D-Tools/build/example'
@@ -28,15 +28,7 @@ jobs:
       - name: Install tools
         shell: bash
         run: |
-          #sudo apt-get -y install build-essential libgl1-mesa-dev curl python3 python3-venv
-          sudo apt-get -y install jq lftp brotli
-          #sudo apt-get -y install libc++-dev
-          #sudo apt-get -y install libc++abi-dev
-          #sudo apt-get -y install libc6-dev
-          sudo apt-get -y install expect
-          #sudo apt-get -y install qtchooser libgl-dev libxcb-cursor0 libmuparser-dev libboost-dev librsvg2-bin libfreetype6-dev libicu-dev pkg-config libfuse2
-          #sudo apt-get -y install lsb-release wget software-properties-common gnupg expect git-lfs
-          #sudo apt-get -y install libgl-dev libglu1-mesa-dev libxmu-dev libxi-dev libgl-dev brotli
+          sudo apt-get -y install jq lftp brotli expect
 
       - name: Update CMake
         uses: lukka/get-cmake@latest
@@ -50,7 +42,6 @@ jobs:
           version: ${{ env.qt_version }}
           host: 'all_os'
           target: 'wasm'
-          set-env: 'false'
           arch: 'wasm_singlethread'
           dir: ${{ env.workspace_root }}
           modules: ${{ env.qt_modules }}
@@ -60,22 +51,19 @@ jobs:
       - name: Verify Qt Installation
         shell: bash
         run: |
-          ls -la ${{ env.qt_root }}/${{ env.qt_version }}/${{ env.qt_host_arch }}
-          ls -la ${{ env.qt_root }}/${{ env.qt_version }}/${{ env.qt_target_arch }}
+          ls -la ${{ env.qt_root }}/${{ env.qt_version }}/${{ env.qt_host_arch }}/lib
+          ls -la ${{ env.qt_root }}/${{ env.qt_version }}/${{ env.qt_target_arch }}/lib
+          ls -la ${{ env.qt_root }}/${{ env.qt_version }}/${{ env.qt_host_arch }}/lib/cmake
+          ls -la ${{ env.qt_root }}/${{ env.qt_version }}/${{ env.qt_target_arch }}/lib/cmake
           
       - name: CMake Build
         shell: bash
         run: |
-          set -e
           make web \
             QT_ROOT=${{ env.qt_root }} \
             QT_VERSION=${{ env.qt_version }} \
             QT_HOST_ARCH=${{ env.qt_host_arch }} \
-            QT_TARGET_ARCH=${{ env.qt_target_arch }} || {
-              echo "Build failed. Contents of build directory:"
-              ls -la build/
-              exit 1
-          }
+            QT_TARGET_ARCH=${{ env.qt_target_arch }}
 
       - name: Upload to FTP
         shell: bash
