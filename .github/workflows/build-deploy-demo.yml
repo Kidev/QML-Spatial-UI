@@ -28,16 +28,15 @@ jobs:
       - name: Install tools
         shell: bash
         run: |
-          sudo apt update
-          sudo apt-get -y install build-essential libgl1-mesa-dev curl python3 python3-venv
-          sudo apt-get -y install jq lftp
-          sudo apt-get -y install libc++-dev
-          sudo apt-get -y install libc++abi-dev
-          sudo apt-get -y install libc6-dev
+          #sudo apt-get -y install build-essential libgl1-mesa-dev curl python3 python3-venv
+          sudo apt-get -y install jq lftp brotli
+          #sudo apt-get -y install libc++-dev
+          #sudo apt-get -y install libc++abi-dev
+          #sudo apt-get -y install libc6-dev
           sudo apt-get -y install expect
-          sudo apt-get -y install qtchooser libgl-dev libxcb-cursor0 libmuparser-dev libboost-dev librsvg2-bin libfreetype6-dev libicu-dev pkg-config libfuse2
-          sudo apt-get -y install lsb-release wget software-properties-common gnupg expect git-lfs
-          sudo apt-get -y install libgl-dev libglu1-mesa-dev libxmu-dev libxi-dev libgl-dev brotli
+          #sudo apt-get -y install qtchooser libgl-dev libxcb-cursor0 libmuparser-dev libboost-dev librsvg2-bin libfreetype6-dev libicu-dev pkg-config libfuse2
+          #sudo apt-get -y install lsb-release wget software-properties-common gnupg expect git-lfs
+          #sudo apt-get -y install libgl-dev libglu1-mesa-dev libxmu-dev libxi-dev libgl-dev brotli
 
       - name: Update CMake
         uses: lukka/get-cmake@latest
@@ -56,15 +55,20 @@ jobs:
           dir: ${{ env.workspace_root }}
           modules: ${{ env.qt_modules }}
           aqtsource: 'git+https://github.com/Kidev/aqtinstall.git@wasm'
- 
+          
       - name: CMake Build
         shell: bash
         run: |
+          set -e
           make web \
-          QT_ROOT=${{ env.qt_root }} \
-          QT_VERSION=${{ env.qt_version }} \
-          QT_HOST_ARCH=${{ env.qt_host_arch }} \
-          QT_TARGET_ARCH=${{ env.qt_target_arch }}
+            QT_ROOT=${{ env.qt_root }} \
+            QT_VERSION=${{ env.qt_version }} \
+            QT_HOST_ARCH=${{ env.qt_host_arch }} \
+            QT_TARGET_ARCH=${{ env.qt_target_arch }} || {
+              echo "Build failed. Contents of build directory:"
+              ls -la build/
+              exit 1
+          }
 
       - name: Upload to FTP
         shell: bash
