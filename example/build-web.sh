@@ -22,8 +22,8 @@ esac
 
 QT_VERSION_NAME="Qt${QT_VERSION:0:1}"
 QT_ROOT_TARGET="${QT_ROOT}/${QT_VERSION}/${QT_TARGET_ARCH}"
-QT_ROOT_HOST="${QT_ROOT}/${QT_VERSION}/${QT_HOST_ARCH}"
-QT_HOST_CMAKE_DIR="${QT_ROOT_HOST}/lib/cmake"
+QT_HOST_PATH="${QT_ROOT}/${QT_VERSION}/${QT_HOST_ARCH}"
+QT_HOST_CMAKE_DIR="${QT_HOST_PATH}/lib/cmake"
 QT_MODULE_PATH="${QT_ROOT_TARGET}/lib/cmake/${QT_VERSION_NAME}"
 QT_TOOLCHAIN="${QT_ROOT_TARGET}/lib/cmake/${QT_VERSION_NAME}/qt.toolchain.cmake"
 
@@ -44,7 +44,7 @@ fi
 
 mkdir -p build
 ./emsdk/upstream/emscripten/emcmake cmake -G Ninja -S . -B build \
-  -DQT_HOST_PATH=${QT_ROOT_HOST} \
+  -DQT_HOST_PATH=${QT_HOST_PATH} \
   -DQT_HOST_PATH_CMAKE_DIR=${QT_HOST_CMAKE_DIR} \
   -DQt6_DIR=${QT_MODULE_PATH} \
   -DCMAKE_TOOLCHAIN_FILE=${QT_TOOLCHAIN} \
