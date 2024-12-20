@@ -55,6 +55,12 @@ jobs:
           dir: ${{ env.workspace_root }}
           modules: ${{ env.qt_modules }}
           aqtsource: 'git+https://github.com/Kidev/aqtinstall.git@wasm'
+
+      - name: Verify Qt Installation
+        shell: bash
+        run: |
+          ls -la ${{ env.qt_root }}/${{ env.qt_version }}/${{ env.qt_host_arch }}
+          ls -la ${{ env.qt_root }}/${{ env.qt_version }}/${{ env.qt_target_arch }}
           
       - name: CMake Build
         shell: bash
