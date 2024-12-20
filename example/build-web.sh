@@ -42,6 +42,8 @@ if [ "$ACTIVE_VERSION" != "$EMSDK_VERSION" ]; then
     source ./emsdk/emsdk_env.sh
 fi
 
+export QT_HOST_PATH
+
 mkdir -p build
 ./emsdk/upstream/emscripten/emcmake cmake -G Ninja -S . -B build \
   -DQT_HOST_PATH=${QT_HOST_PATH} \
